@@ -15,14 +15,14 @@ const Navbar = () => {
           />
         </Link>
         <div className="space-x-4">
-          <Link to="/login">
+          <Link to="/candidate/login">
             <Button variant="outline" className="bg-white/20 hover:bg-white/30 backdrop-blur-sm font-medium animate-fade-in">
-              Login
+              I am a Candidate
             </Button>
           </Link>
-          <Link to="/register">
+          <Link to="/employer/login">
             <Button className="bg-brand-purple hover:bg-indigo-600 font-medium animate-fade-in">
-              Register
+              I want to Hire
             </Button>
           </Link>
         </div>
