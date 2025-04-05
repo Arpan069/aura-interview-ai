@@ -1,20 +1,37 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight, PlayCircle } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 
 const HeroSection = () => {
   const controls = useAnimation();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (isInView) {
       controls.start("visible");
     }
   }, [controls, isInView]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   // Animations for elements
   const containerVariants = {
@@ -38,16 +55,19 @@ const HeroSection = () => {
     }
   };
 
-  const particleCount = 15; // Number of floating particles
+  const particleCount = 20; // Increased number of particles for a more immersive effect
   
   return (
     <div className="relative min-h-screen overflow-hidden flex items-center" ref={ref}>
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-brand-primary via-brand-primary/90 to-background z-0"></div>
       
-      {/* Animated Particles */}
+      {/* Mercor-style Grid Background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+      
+      {/* Interactive Particles */}
       {[...Array(particleCount)].map((_, i) => (
-        <div
+        <motion.div
           key={i}
           className="absolute rounded-full opacity-30 dark:opacity-20"
           style={{
@@ -55,26 +75,64 @@ const HeroSection = () => {
             height: `${Math.random() * 150 + 50}px`,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            background: i % 2 === 0 ? '#FFE600' : '#FFFFFF',
-            animation: `floating ${Math.random() * 10 + 10}s ease-in-out infinite`,
-            animationDelay: `${Math.random() * 5}s`,
+            background: theme === 'dark' 
+              ? 'radial-gradient(circle at center, rgba(255,255,255,0.8), rgba(255,255,255,0.2))' 
+              : 'radial-gradient(circle at center, rgba(79,70,229,0.8), rgba(79,70,229,0.2))',
+          }}
+          animate={{
+            x: [0, Math.random() * 100 - 50],
+            y: [0, Math.random() * 100 - 50],
+            scale: [1, Math.random() * 0.4 + 0.8],
+            opacity: [0.2, 0.5, 0.2],
+          }}
+          transition={{
+            duration: Math.random() * 5 + 10, 
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
           }}
         />
       ))}
       
-      {/* Animated Meteor Shower */}
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={`meteor-${i}`}
-          className="meteor"
+      {/* Floating Tech Elements - Mercor style */}
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={`tech-${i}`}
+          className="absolute"
           style={{
-            width: `${Math.random() * 200 + 100}px`,
-            top: `${Math.random() * 50}%`,
-            left: `${Math.random() * 100 + 50}%`,
-            animationDelay: `${Math.random() * 8}s`,
+            left: `${Math.random() * 80 + 10}%`,
+            top: `${Math.random() * 80 + 10}%`,
+            transform: `rotate(${Math.random() * 45 - 22.5}deg)`,
           }}
-        />
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ 
+            opacity: [0.3, 0.7, 0.3],
+            y: [0, -30, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{
+            duration: Math.random() * 10 + 15,
+            repeat: Infinity,
+            delay: Math.random() * 5
+          }}
+        >
+          <div className={`w-16 h-16 md:w-24 md:h-24 flex items-center justify-center rounded-xl
+            ${theme === 'dark' ? 'bg-white/5' : 'bg-brand-primary/5'} backdrop-blur-sm`}>
+            <div className={`text-2xl md:text-3xl ${theme === 'dark' ? 'text-white/70' : 'text-brand-primary/70'}`}>
+              {['AI', 'ML', '</>',  'UX', '{ }', '01', '++', '##'][i]}
+            </div>
+          </div>
+        </motion.div>
       ))}
+
+      {/* 3D Parallax Effect */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        animate={{
+          backgroundPosition: `${50 + (mousePosition.x / window.innerWidth - 0.5) * 10}% ${50 + (mousePosition.y / window.innerHeight - 0.5) * 10}%`,
+        }}
+        transition={{ type: "spring", damping: 15 }}
+      />
       
       <motion.div
         initial="hidden"
@@ -86,7 +144,7 @@ const HeroSection = () => {
           {/* Left Column: Text Content */}
           <div className="text-left">
             <motion.div variants={itemVariants} className="mb-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-secondary/20 text-brand-secondary text-sm font-medium">
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-sm font-medium">
                 AI-Powered Interviews
                 <ChevronRight className="h-4 w-4 ml-1" />
               </span>
@@ -96,10 +154,10 @@ const HeroSection = () => {
               variants={itemVariants}
               className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Ace Your <span className="text-brand-secondary relative">
+              Ace Your <span className="text-white relative">
                 Interviews
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 385 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 5.5C95.8333 3.5 281.8 0.699997 384 8.49997" stroke="#FFE600" strokeWidth="8" strokeLinecap="round"/>
+                  <path d="M1 5.5C95.8333 3.5 281.8 0.699997 384 8.49997" stroke="#FFFFFF" strokeWidth="8" strokeLinecap="round"/>
                 </svg>
               </span> With AI
             </motion.h1>
@@ -116,7 +174,7 @@ const HeroSection = () => {
               className="flex flex-wrap gap-4 mb-12"
             >
               <Link to="/candidate/login">
-                <Button size="lg" className="bg-brand-secondary text-brand-primary hover:bg-brand-secondary/90 font-medium gap-2 py-6 px-6 rounded-xl text-base btn-hover-effect">
+                <Button size="lg" className="bg-white text-brand-primary hover:bg-white/90 font-medium gap-2 py-6 px-6 rounded-xl text-base btn-hover-effect">
                   Start Practicing Now
                   <ArrowRight className="ml-1 h-5 w-5" />
                 </Button>
@@ -162,41 +220,56 @@ const HeroSection = () => {
                   rotate: -360,
                   transition: { duration: 40, repeat: Infinity, ease: "linear" }
                 }}
-                className="absolute w-4/5 h-4/5 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-yellow-400/30"
+                className="absolute w-4/5 h-4/5 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-white/30"
               />
               
               {/* Main Hero Image */}
               <motion.div
                 animate={{ 
                   y: [0, -20, 0],
+                  rotate: [0, 2, 0, -2, 0],
                   transition: { duration: 6, repeat: Infinity, ease: "easeInOut" }
                 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <img 
-                  src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
-                  alt="AI Interview" 
-                  className="w-4/5 h-auto rounded-xl shadow-2xl shadow-brand-primary/30 z-10 animate-pulse-light"
-                />
+                <div className="relative w-4/5 h-auto rounded-xl overflow-hidden glass-effect">
+                  <img 
+                    src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
+                    alt="AI Interview" 
+                    className="w-full h-auto z-10"
+                  />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-brand-primary/30 to-transparent"
+                    animate={{
+                      opacity: [0.5, 0.8, 0.5],
+                      background: [
+                        "linear-gradient(45deg, rgba(79,70,229,0.3) 0%, rgba(79,70,229,0) 70%)",
+                        "linear-gradient(45deg, rgba(79,70,229,0.5) 10%, rgba(79,70,229,0) 80%)",
+                        "linear-gradient(45deg, rgba(79,70,229,0.3) 0%, rgba(79,70,229,0) 70%)",
+                      ]
+                    }}
+                    transition={{ duration: 8, repeat: Infinity }}
+                  />
+                </div>
               </motion.div>
               
-              {/* Floating Elements */}
+              {/* Floating Elements - Mercor style */}
               <motion.div
                 animate={{ 
                   x: [0, 30, 0], 
                   y: [0, -20, 0],
-                  rotate: [0, 10, 0],
+                  rotate: [0, 5, 0, -5, 0],
                   transition: { duration: 8, repeat: Infinity, ease: "easeInOut" }
                 }}
-                className="absolute top-12 right-24 bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-3 border border-white/20 z-20"
+                className="absolute top-12 right-24 backdrop-blur-md rounded-lg shadow-lg p-4 border border-white/20 z-20 glass-effect"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 13L9 17L19 7" stroke="#2D3277" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13L9 17L19 7" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <div className="text-white">Real-time feedback</div>
+                  <div className="text-white font-medium">Real-time AI feedback</div>
                 </div>
               </motion.div>
               
@@ -204,18 +277,38 @@ const HeroSection = () => {
                 animate={{ 
                   x: [0, -20, 0], 
                   y: [0, 30, 0],
-                  rotate: [0, -5, 0],
+                  rotate: [0, -5, 0, 5, 0],
                   transition: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }
                 }}
-                className="absolute bottom-20 left-10 bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-3 border border-white/20 z-20"
+                className="absolute bottom-20 left-10 backdrop-blur-md rounded-lg shadow-lg p-4 border border-white/20 z-20 glass-effect"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-brand-secondary rounded-full flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 8V16M8 12H16" stroke="#2D3277" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 8V16M8 12H16" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <div className="text-white">AI Coach</div>
+                  <div className="text-white font-medium">AI Interview Coach</div>
+                </div>
+              </motion.div>
+
+              {/* New floating element - Mercor style */}
+              <motion.div
+                animate={{ 
+                  x: [0, 15, 0, -15, 0], 
+                  y: [0, -15, 0, 15, 0],
+                  rotate: [0, 3, 0, -3, 0],
+                  transition: { duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }
+                }}
+                className="absolute top-40 left-20 backdrop-blur-md rounded-lg shadow-lg p-4 border border-white/20 z-20 glass-effect"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4m4-5l5 5 5-5m-5 5V3" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <div className="text-white font-medium">Instant Reports</div>
                 </div>
               </motion.div>
             </div>
@@ -234,6 +327,27 @@ const HeroSection = () => {
           <path fill="currentColor" fillOpacity="1" className="text-background" d="M0,160L48,154.7C96,149,192,139,288,154.7C384,171,480,213,576,218.7C672,224,768,192,864,181.3C960,171,1056,181,1152,176C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
       </motion.div>
+
+      {/* CSS for Mercor-style grid pattern */}
+      <style jsx>{`
+        .bg-grid-pattern {
+          background-size: 40px 40px;
+          background-image: 
+            linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        
+        .glass-effect {
+          backdrop-filter: blur(8px);
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark .glass-effect {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+      `}</style>
     </div>
   );
 };

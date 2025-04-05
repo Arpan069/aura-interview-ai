@@ -54,13 +54,13 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				brand: {
-					blue: '#2D3277', // Updated to match requested color
-					purple: '#2D3277', // Updated to match requested color
-					pink: '#2D3277', // Updated to match requested color
-					primary: '#2D3277', // Updated to match requested color (Mercor primary blue)
-					secondary: '#FFE600', // Updated to match requested color (Mercor yellow)
-					tertiary: '#2D3277', // Updated to match requested color
-					light: '#FFFFFF', // Updated to match requested color
+					blue: '#4f46e5', // Updated from #2D3277
+					purple: '#4f46e5', // Updated from #2D3277
+					pink: '#4f46e5', // Updated from #2D3277
+					primary: '#4f46e5', // Updated from #2D3277 
+					secondary: '#ffffff', // Updated from #FFE600
+					tertiary: '#4f46e5', // Updated from #2D3277
+					light: '#FFFFFF', // Unchanged
 				}
 			},
 			borderRadius: {
