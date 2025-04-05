@@ -55,8 +55,12 @@ export default {
 				},
 				brand: {
 					blue: '#3B82F6',
-					purple: '#8B5CF6',
+					purple: '#6366F1',
 					pink: '#EC4899',
+					primary: '#5627FF', // Mercor primary color
+					secondary: '#7F56D9', // Mercor secondary color
+					tertiary: '#323A46', // Mercor dark color
+					light: '#F9FAFB', // Mercor light color
 				}
 			},
 			borderRadius: {
@@ -92,6 +96,10 @@ export default {
 				'background-pan': {
 					'0%': { backgroundPosition: '0% 50%' },
 					'100%': { backgroundPosition: '100% 50%' }
+				},
+				'pulse-light': {
+					'0%, 100%': { opacity: '0.6' },
+					'50%': { opacity: '0.8' }
 				}
 			},
 			animation: {
@@ -101,7 +109,8 @@ export default {
 				'fade-out': 'fade-out 0.5s ease-out',
 				'scale-in': 'scale-in 0.3s ease-out',
 				'float': 'float 3s ease-in-out infinite',
-				'background-pan': 'background-pan 10s ease infinite alternate'
+				'background-pan': 'background-pan 10s ease infinite alternate',
+				'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
 			}
 		}
 	},
