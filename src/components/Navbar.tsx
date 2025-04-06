@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,13 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import { useTheme } from "@/components/ThemeProvider";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
   const isMobile = useIsMobile();
+  const { theme } = useTheme();
   
   useEffect(() => {
     const unsubscribe = scrollY.onChange(latest => {
@@ -64,7 +65,11 @@ const Navbar = () => {
                 <Link to="/candidate/login">
                   <Button 
                     variant="outline" 
-                    className="bg-white/15 hover:bg-white/30 backdrop-blur-sm text-white border-white/30 font-medium btn-hover-effect dark:bg-brand-primary/30 dark:hover:bg-brand-primary/40 dark:text-white dark:border-brand-primary/40"
+                    className={`${
+                      theme === 'dark' 
+                        ? 'bg-white/15 hover:bg-white/30 backdrop-blur-sm text-white border-white/30'
+                        : 'bg-brand-primary/10 hover:bg-brand-primary/20 backdrop-blur-sm text-brand-primary border-brand-primary/30'
+                    } font-medium btn-hover-effect`}
                   >
                     <motion.span
                       whileHover={{ scale: 1.05 }}
