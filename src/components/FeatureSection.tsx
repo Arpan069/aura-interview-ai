@@ -207,14 +207,16 @@ const FeatureSection = () => {
       </div>
 
       {/* CSS for Mercor-style grid pattern */}
-      <style jsx>{`
+      <style>
+        {`
         .bg-grid-pattern {
           background-size: 30px 30px;
           background-image: 
             linear-gradient(to right, ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.03)'} 1px, transparent 1px),
             linear-gradient(to bottom, ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.03)'} 1px, transparent 1px);
         }
-      `}</style>
+        `}
+      </style>
     </section>
   );
 };

@@ -329,7 +329,8 @@ const HeroSection = () => {
       </motion.div>
 
       {/* CSS for Mercor-style grid pattern */}
-      <style jsx>{`
+      <style>
+        {`
         .bg-grid-pattern {
           background-size: 40px 40px;
           background-image: 
@@ -347,7 +348,8 @@ const HeroSection = () => {
           background: rgba(0, 0, 0, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
