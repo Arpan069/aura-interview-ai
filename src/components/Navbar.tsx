@@ -24,7 +24,7 @@ const Navbar = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 px-4 py-3 transition-all duration-300 ${
-          scrolled ? "backdrop-blur-md bg-white/10 dark:bg-black/20 shadow-lg" : "bg-transparent"
+          scrolled ? "backdrop-blur-xl bg-white/90 dark:bg-black/80 shadow-lg" : "bg-transparent"
         }`}
       >
         <div className="container mx-auto flex justify-between items-center">
@@ -48,7 +48,7 @@ const Navbar = () => {
             <Link to="/candidate/login">
               <Button 
                 variant="outline" 
-                className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border-white/30 font-medium btn-hover-effect dark:bg-brand-primary/20 dark:hover:bg-brand-primary/30 dark:text-white"
+                className="bg-white/15 hover:bg-white/30 backdrop-blur-sm text-white border-white/30 font-medium btn-hover-effect dark:bg-brand-primary/30 dark:hover:bg-brand-primary/40 dark:text-white dark:border-brand-primary/40"
               >
                 <motion.span
                   whileHover={{ scale: 1.05 }}
@@ -60,7 +60,7 @@ const Navbar = () => {
             </Link>
             <Link to="/employer/login">
               <Button 
-                className="bg-brand-primary hover:bg-brand-primary/90 font-medium btn-hover-effect text-white"
+                className="bg-brand-primary hover:bg-brand-primary/90 font-medium btn-hover-effect text-white shadow-md shadow-brand-primary/20 dark:shadow-brand-primary/40"
               >
                 <motion.span
                   whileHover={{ scale: 1.05 }}
@@ -81,13 +81,13 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
   return (
     <motion.a
       href={href}
-      className="text-white/80 hover:text-white font-medium relative"
+      className="text-gray-800 dark:text-white/90 hover:text-brand-primary dark:hover:text-white font-medium relative"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
       <span>{children}</span>
       <motion.span 
-        className="absolute bottom-0 left-0 w-0 h-0.5 bg-white"
+        className="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-primary dark:bg-white"
         initial={{ width: 0 }}
         whileHover={{ width: '100%' }}
         transition={{ duration: 0.3 }}

@@ -31,6 +31,9 @@ const Index = () => {
       {/* Interactive 3D background */}
       <ThreeBackground isDarkMode={theme === 'dark'} />
       
+      {/* Mercor-style grid background */}
+      <div className="fixed inset-0 mercor-grid pointer-events-none z-0"></div>
+      
       <Navbar />
       
       <section id="hero">
@@ -42,7 +45,7 @@ const Index = () => {
           <VideoCarousel />
         </section>
         
-        <section id="features">
+        <section id="features" className="high-contrast-section rounded-3xl my-12">
           <FeatureSection />
         </section>
         
@@ -63,28 +66,53 @@ const Index = () => {
         {[...Array(5)].map((_, i) => (
           <motion.div
             key={`floating-element-${i}`}
-            className="absolute rounded-full opacity-20"
+            className="absolute rounded-full mercor-blur-sphere"
             style={{
               width: `${Math.random() * 200 + 100}px`,
               height: `${Math.random() * 200 + 100}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               background: theme === 'dark'
-                ? 'radial-gradient(circle at center, rgba(255,255,255,0.3), rgba(255,255,255,0))'
-                : 'radial-gradient(circle at center, rgba(79,70,229,0.3), rgba(79,70,229,0))',
-              filter: 'blur(60px)',
+                ? 'radial-gradient(circle at center, rgba(255,255,255,0.4), rgba(255,255,255,0))'
+                : 'radial-gradient(circle at center, rgba(79,70,229,0.4), rgba(79,70,229,0))',
+              filter: 'blur(70px)',
             }}
             animate={{
               x: [0, Math.random() * 100 - 50],
               y: [0, Math.random() * 100 - 50],
               scale: [1, Math.random() * 0.5 + 0.8],
-              opacity: [0.1, 0.3, 0.1],
+              opacity: theme === 'dark' ? [0.15, 0.3, 0.15] : [0.2, 0.4, 0.2],
             }}
             transition={{
               duration: Math.random() * 20 + 20,
               repeat: Infinity,
               repeatType: "mirror",
               ease: "easeInOut",
+            }}
+          />
+        ))}
+        
+        {/* Add subtle particle effect */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: `${Math.random() * 4 + 1}px`,
+              height: `${Math.random() * 4 + 1}px`,
+              background: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(79,70,229,0.6)',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -(Math.random() * 100 + 50)],
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: Math.random() * 10 + 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: Math.random() * 5,
             }}
           />
         ))}

@@ -34,40 +34,40 @@ const StatsSection = () => {
   };
 
   return (
-    <section className="py-24 relative overflow-hidden" ref={ref}>
+    <section className="py-24 relative overflow-hidden high-contrast-section" ref={ref}>
       {/* Background elements - Mercor style */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <div className="absolute inset-0 mercor-grid opacity-80"></div>
       
       {/* Animated background blobs */}
       <motion.div
-        className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-10"
+        className="absolute -top-32 -left-32 w-96 h-96 rounded-full mercor-blur-sphere"
         style={{
           background: theme === 'dark' 
-            ? 'radial-gradient(circle at center, rgba(255,255,255,0.4), rgba(255,255,255,0))' 
-            : 'radial-gradient(circle at center, rgba(79,70,229,0.4), rgba(79,70,229,0))'
+            ? 'radial-gradient(circle at center, rgba(255,255,255,0.2), rgba(255,255,255,0))' 
+            : 'radial-gradient(circle at center, rgba(79,70,229,0.3), rgba(79,70,229,0))'
         }}
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.1, 0.2, 0.1],
+          opacity: theme === 'dark' ? [0.2, 0.3, 0.2] : [0.3, 0.4, 0.3],
         }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       
       <motion.div
-        className="absolute -bottom-48 -right-48 w-96 h-96 rounded-full opacity-10"
+        className="absolute -bottom-48 -right-48 w-96 h-96 rounded-full mercor-blur-sphere"
         style={{
           background: theme === 'dark' 
-            ? 'radial-gradient(circle at center, rgba(255,255,255,0.4), rgba(255,255,255,0))' 
-            : 'radial-gradient(circle at center, rgba(79,70,229,0.4), rgba(79,70,229,0))'
+            ? 'radial-gradient(circle at center, rgba(255,255,255,0.2), rgba(255,255,255,0))' 
+            : 'radial-gradient(circle at center, rgba(79,70,229,0.3), rgba(79,70,229,0))'
         }}
         animate={{
           scale: [1, 1.1, 1],
-          opacity: [0.1, 0.15, 0.1],
+          opacity: theme === 'dark' ? [0.2, 0.25, 0.2] : [0.3, 0.35, 0.3],
         }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <div className="container mx-auto">
+      <div className="container mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -76,7 +76,7 @@ const StatsSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Impact in Numbers</h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto">
             See how our AI-powered interview platform is transforming careers worldwide
           </p>
           <motion.div 
@@ -102,8 +102,8 @@ const StatsSection = () => {
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.7, delay: index * 0.2 }}
               viewport={{ once: true }}
-              whileHover={{ y: -12, boxShadow: "0 20px 40px rgba(79, 70, 229, 0.2)" }}
-              className="glass-card dark:bg-brand-primary/10 p-10 rounded-xl flex flex-col items-center text-center transform transition-all"
+              whileHover={{ y: -12, boxShadow: theme === 'dark' ? "0 20px 40px rgba(79, 70, 229, 0.3)" : "0 20px 40px rgba(79, 70, 229, 0.2)" }}
+              className="mercor-card p-10 rounded-xl flex flex-col items-center text-center transform transition-all"
             >
               <motion.div 
                 className="mb-6 p-4 bg-brand-primary/10 dark:bg-white/10 rounded-full"
@@ -120,7 +120,7 @@ const StatsSection = () => {
                 initial={{ opacity: 0, scale: 0 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 + index * 0.2 }}
-                className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-brand-primary to-brand-primary/70 bg-clip-text text-transparent"
+                className="text-4xl md:text-5xl font-bold mb-2 mercor-gradient-text"
               >
                 <motion.span
                   animate={isInView ? { opacity: 1 } : { opacity: 0 }}
@@ -130,7 +130,7 @@ const StatsSection = () => {
                 </motion.span>
               </motion.h3>
               
-              <p className="text-gray-600 dark:text-gray-300 font-medium">{stat.label}</p>
+              <p className="text-gray-700 dark:text-gray-200 font-medium">{stat.label}</p>
               
               <motion.div 
                 className="w-16 h-1 bg-brand-primary/30 dark:bg-white/30 rounded-full mt-4"
@@ -143,18 +143,6 @@ const StatsSection = () => {
           ))}
         </motion.div>
       </div>
-
-      {/* CSS for Mercor-style grid pattern */}
-      <style>
-        {`
-        .bg-grid-pattern {
-          background-size: 30px 30px;
-          background-image: 
-            linear-gradient(to right, ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.03)'} 1px, transparent 1px),
-            linear-gradient(to bottom, ${theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(79,70,229,0.03)'} 1px, transparent 1px);
-        }
-        `}
-      </style>
     </section>
   );
 };

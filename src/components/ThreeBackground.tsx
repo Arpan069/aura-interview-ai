@@ -41,7 +41,7 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
     containerRef.current.appendChild(renderer.domElement);
     
     // Particles
-    const particlesCount = 2000;
+    const particlesCount = 3000; // Increased for more density
     const positions = new Float32Array(particlesCount * 3);
     const colors = new Float32Array(particlesCount * 3);
     const sizes = new Float32Array(particlesCount);
@@ -50,18 +50,18 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
     const particlesGeometry = new THREE.BufferGeometry();
     particlesGeometryRef.current = particlesGeometry;
     
-    // Colors based on theme
+    // Colors based on theme - using new color scheme
     let baseColor1 = isDarkMode 
-      ? new THREE.Color(0x2D3277) // Dark mode primary
-      : new THREE.Color(0x2D3277); // Light mode primary
+      ? new THREE.Color(0x4f46e5) // Primary color
+      : new THREE.Color(0x4f46e5); 
       
     let baseColor2 = isDarkMode 
-      ? new THREE.Color(0xFFE600) // Dark mode accent
-      : new THREE.Color(0xFFE600); // Light mode accent
+      ? new THREE.Color(0xFFFFFF) // White
+      : new THREE.Color(0xFFFFFF);
       
     let baseColor3 = isDarkMode 
-      ? new THREE.Color(0x1A1D3F) // Dark mode deeper shade
-      : new THREE.Color(0x4D5299); // Light mode lighter shade
+      ? new THREE.Color(0x1A1A2E) // Dark blue
+      : new THREE.Color(0xC7D2FE); // Light purple/indigo
     
     // Create particles with varied sizes and speeds
     for (let i = 0; i < particlesCount; i++) {
@@ -98,8 +98,8 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       colors[i3 + 1] = mixedColor.g;
       colors[i3 + 2] = mixedColor.b;
       
-      // Random sizes
-      sizes[i] = Math.random() * 3;
+      // Random sizes - increased for better visibility
+      sizes[i] = Math.random() * 4;
       
       // Random movement speeds
       speeds[i] = (Math.random() - 0.5) * 0.2;
@@ -128,7 +128,7 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       sizeAttenuation: true,
       transparent: true,
       alphaTest: 0.01,
-      opacity: 0.8,
+      opacity: isDarkMode ? 0.7 : 0.6, // Increased opacity for better visibility
       vertexColors: true,
     });
     particlesMaterialRef.current = particlesMaterial;
@@ -144,7 +144,7 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       const material = new THREE.MeshBasicMaterial({ 
         color: color, 
         transparent: true,
-        opacity: 0.4 
+        opacity: 0.5 // Increased opacity for better visibility
       });
       
       const sphere = new THREE.Mesh(geometry, material);
@@ -155,7 +155,7 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       const glowMaterial = new THREE.MeshBasicMaterial({ 
         color: color, 
         transparent: true,
-        opacity: 0.15,
+        opacity: 0.2,
         side: THREE.BackSide 
       });
       
@@ -165,12 +165,14 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       return sphere;
     };
     
-    // Add a few orbs
-    const orb1 = createGlowingOrb([-30, 15, -20], baseColor1, 2);
-    const orb2 = createGlowingOrb([25, -10, 10], baseColor2, 3);
-    const orb3 = createGlowingOrb([0, 30, -15], baseColor3, 2.5);
+    // Add more orbs with new colors
+    const orb1 = createGlowingOrb([-30, 15, -20], baseColor1, 2.5);
+    const orb2 = createGlowingOrb([25, -10, 10], baseColor2, 3.5);
+    const orb3 = createGlowingOrb([0, 30, -15], baseColor3, 3);
+    const orb4 = createGlowingOrb([-20, -25, 15], baseColor1, 2); // Added extra orb
+    const orb5 = createGlowingOrb([35, 20, 5], baseColor3, 1.5); // Added extra orb
     
-    scene.add(orb1, orb2, orb3);
+    scene.add(orb1, orb2, orb3, orb4, orb5);
     
     // Handle window resize
     const handleResize = () => {
@@ -187,8 +189,8 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       
       // Gently rotate the entire particle system
       if (particlesRef.current) {
-        particlesRef.current.rotation.y += 0.0003;
-        particlesRef.current.rotation.x += 0.0001;
+        particlesRef.current.rotation.y += 0.0004;
+        particlesRef.current.rotation.x += 0.0002;
       }
       
       // Update each particle position based on its speed
@@ -204,19 +206,30 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
           const y = positions[i3 + 1];
           const z = positions[i3 + 2];
           
-          // Apply noise-based movement
-          positions[i3] = x + Math.sin(timeRef.current + x * 0.05) * 0.05;
-          positions[i3 + 1] = y + Math.cos(timeRef.current + y * 0.05) * 0.05;
-          positions[i3 + 2] = z + Math.sin(timeRef.current + z * 0.05) * 0.05;
+          // Apply noise-based movement - enhanced for more fluid motion
+          positions[i3] = x + Math.sin(timeRef.current + x * 0.05) * 0.08;
+          positions[i3 + 1] = y + Math.cos(timeRef.current + y * 0.05) * 0.08;
+          positions[i3 + 2] = z + Math.sin(timeRef.current + z * 0.05) * 0.08;
         }
         
         particlesGeometryRef.current.attributes.position.needsUpdate = true;
       }
       
-      // Animate the orbs
-      orb1.position.y = 15 + Math.sin(timeRef.current * 0.8) * 5;
-      orb2.position.x = 25 + Math.cos(timeRef.current * 0.6) * 7;
-      orb3.position.z = -15 + Math.sin(timeRef.current * 0.7) * 6;
+      // Animate the orbs with more dynamic movement
+      orb1.position.y = 15 + Math.sin(timeRef.current * 0.8) * 8;
+      orb1.position.x = -30 + Math.cos(timeRef.current * 0.5) * 5;
+      
+      orb2.position.x = 25 + Math.cos(timeRef.current * 0.6) * 10;
+      orb2.position.z = 10 + Math.sin(timeRef.current * 0.7) * 5;
+      
+      orb3.position.z = -15 + Math.sin(timeRef.current * 0.7) * 8;
+      orb3.position.y = 30 + Math.cos(timeRef.current * 0.8) * 7;
+      
+      orb4.position.x = -20 + Math.cos(timeRef.current * 0.9) * 7;
+      orb4.position.y = -25 + Math.sin(timeRef.current * 0.4) * 6;
+      
+      orb5.position.z = 5 + Math.sin(timeRef.current * 0.5) * 10;
+      orb5.position.x = 35 + Math.cos(timeRef.current * 0.7) * 8;
       
       renderer.render(scene, camera);
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -249,7 +262,7 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 z-[-1] opacity-70"
+      className="fixed inset-0 z-[-1] opacity-80"
     />
   );
 };
