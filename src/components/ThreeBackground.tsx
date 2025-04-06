@@ -1,178 +1,137 @@
 
-import { useRef, useEffect } from 'react';
-import * as THREE from 'three';
+import React, { useRef, useEffect } from "react";
+import * as THREE from "three";
+import { useTheme } from "@/components/ThemeProvider";
 
-type ThreeBackgroundProps = {
-  isDarkMode?: boolean;
-};
+interface ThreeBackgroundProps {
+  isDarkMode: boolean;
+}
 
-const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
+const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ isDarkMode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>(0);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const particlesRef = useRef<THREE.Points | null>(null);
-  const particlesGeometryRef = useRef<THREE.BufferGeometry | null>(null);
-  const particlesMaterialRef = useRef<THREE.PointsMaterial | null>(null);
-  const timeRef = useRef<number>(0);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
-    // Scene
+
+    // Scene setup
     const scene = new THREE.Scene();
-    sceneRef.current = scene;
     
-    // Camera
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 50;
+    // Set background color based on theme
+    scene.background = new THREE.Color(isDarkMode ? "#0f0f0f" : "#f9f9ff");
     
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ 
-      alpha: true, 
-      antialias: true 
-    });
+    // Camera setup with better perspective for mercor-style
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 10;
+    
+    // Renderer setup with anti-aliasing for smoother edges
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    containerRef.current.appendChild(renderer.domElement);
+    renderer.setPixelRatio(window.devicePixelRatio);
     
-    // Particles
-    const particlesCount = 3000; // Increased for more density
-    const positions = new Float32Array(particlesCount * 3);
-    const colors = new Float32Array(particlesCount * 3);
-    const sizes = new Float32Array(particlesCount);
-    const speeds = new Float32Array(particlesCount);
-    
-    const particlesGeometry = new THREE.BufferGeometry();
-    particlesGeometryRef.current = particlesGeometry;
-    
-    // Colors based on theme - using new color scheme
-    let baseColor1 = isDarkMode 
-      ? new THREE.Color(0x4f46e5) // Primary color
-      : new THREE.Color(0x4f46e5); 
-      
-    let baseColor2 = isDarkMode 
-      ? new THREE.Color(0xFFFFFF) // White
-      : new THREE.Color(0xFFFFFF);
-      
-    let baseColor3 = isDarkMode 
-      ? new THREE.Color(0x1A1A2E) // Dark blue
-      : new THREE.Color(0xC7D2FE); // Light purple/indigo
-    
-    // Create particles with varied sizes and speeds
-    for (let i = 0; i < particlesCount; i++) {
-      const i3 = i * 3;
-      
-      // Position - create a sphere distribution
-      const radius = Math.random() * 80;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-      
-      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i3 + 2] = radius * Math.cos(phi);
-      
-      // Mix between three colors for more variety
-      const colorChoice = Math.random();
-      let mixedColor;
-      
-      if (colorChoice < 0.33) {
-        mixedColor = new THREE.Color().lerpColors(
-          baseColor1, baseColor2, Math.random()
-        );
-      } else if (colorChoice < 0.66) {
-        mixedColor = new THREE.Color().lerpColors(
-          baseColor2, baseColor3, Math.random()
-        );
-      } else {
-        mixedColor = new THREE.Color().lerpColors(
-          baseColor3, baseColor1, Math.random()
-        );
-      }
-      
-      colors[i3] = mixedColor.r;
-      colors[i3 + 1] = mixedColor.g;
-      colors[i3 + 2] = mixedColor.b;
-      
-      // Random sizes - increased for better visibility
-      sizes[i] = Math.random() * 4;
-      
-      // Random movement speeds
-      speeds[i] = (Math.random() - 0.5) * 0.2;
+    // Clear any existing canvases
+    if (containerRef.current.querySelector("canvas")) {
+      containerRef.current.querySelector("canvas")?.remove();
     }
     
-    particlesGeometry.setAttribute(
-      'position',
-      new THREE.BufferAttribute(positions, 3)
-    );
-    particlesGeometry.setAttribute(
-      'color',
-      new THREE.BufferAttribute(colors, 3)
-    );
-    particlesGeometry.setAttribute(
-      'size',
-      new THREE.BufferAttribute(sizes, 1)
-    );
-    particlesGeometry.setAttribute(
-      'speed',
-      new THREE.BufferAttribute(speeds, 1)
-    );
+    containerRef.current.appendChild(renderer.domElement);
     
-    // Particle Material with custom shader
-    const particlesMaterial = new THREE.PointsMaterial({
-      size: 0.7,
-      sizeAttenuation: true,
+    // Create more particles for a denser effect
+    const particleCount = window.innerWidth < 768 ? 80 : 150;
+    const particles = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    const colors = new Float32Array(particleCount * 3);
+    
+    // Primary color based on theme
+    const primaryColor = new THREE.Color(isDarkMode ? "#4f46e5" : "#4f46e5");
+    const accentColor = new THREE.Color(isDarkMode ? "#ffffff" : "#000000");
+    
+    // Populate the particles with varied positions and colors
+    for (let i = 0; i < particleCount; i++) {
+      // Position with wider spread
+      positions[i * 3] = (Math.random() - 0.5) * 40; // x
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 30; // y
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20; // z
+      
+      // Size variation for visual interest
+      sizes[i] = Math.random() * 0.8 + 0.1;
+      
+      // Color gradient from primary to accent with more primary
+      if (Math.random() > 0.7) {
+        colors[i * 3] = accentColor.r;
+        colors[i * 3 + 1] = accentColor.g;
+        colors[i * 3 + 2] = accentColor.b;
+      } else {
+        colors[i * 3] = primaryColor.r;
+        colors[i * 3 + 1] = primaryColor.g;
+        colors[i * 3 + 2] = primaryColor.b;
+      }
+    }
+    
+    particles.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    particles.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    particles.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    
+    // Using a custom vertex shader for more sophisticated particle effects
+    const particleMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        pointTexture: { value: new THREE.TextureLoader().load(
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAAsTAAALEwEAmpwYAAABnUlEQVR4nO3bMQEAIAgEQUGtf2ZqAB8RduZuswQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC5ug7g6a5buOVPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHzY3ibHOsu5/vQAAAABJRU5ErkJggg=='
+        )}
+      },
+      vertexShader: `
+        uniform float time;
+        attribute float size;
+        attribute vec3 color;
+        varying vec3 vColor;
+        void main() {
+          vColor = color;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          // Animate vertical movement
+          float yOffset = sin(time * 0.5 + position.x) * 0.5;
+          mvPosition.y += yOffset;
+          gl_PointSize = size * (300.0 / -mvPosition.z);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D pointTexture;
+        varying vec3 vColor;
+        void main() {
+          gl_FragColor = vec4(vColor, 1.0) * texture2D(pointTexture, gl_PointCoord);
+        }
+      `,
       transparent: true,
-      alphaTest: 0.01,
-      opacity: isDarkMode ? 0.7 : 0.6, // Increased opacity for better visibility
-      vertexColors: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
     });
-    particlesMaterialRef.current = particlesMaterial;
     
-    // Create the particle system
-    const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-    particlesRef.current = particles;
-    scene.add(particles);
-
-    // Add a few larger glowing orbs
-    const createGlowingOrb = (position: [number, number, number], color: THREE.Color, size: number) => {
-      const geometry = new THREE.SphereGeometry(size, 32, 32);
-      const material = new THREE.MeshBasicMaterial({ 
-        color: color, 
-        transparent: true,
-        opacity: 0.5 // Increased opacity for better visibility
-      });
+    const particleSystem = new THREE.Points(particles, particleMaterial);
+    scene.add(particleSystem);
+    
+    // Simple rotation animation
+    const animate = (time: number) => {
+      const t = time * 0.001; // Convert to seconds
       
-      const sphere = new THREE.Mesh(geometry, material);
-      sphere.position.set(...position);
+      // Update shader time uniform
+      particleMaterial.uniforms.time.value = t;
       
-      // Add glow effect
-      const glowGeometry = new THREE.SphereGeometry(size * 1.2, 32, 32);
-      const glowMaterial = new THREE.MeshBasicMaterial({ 
-        color: color, 
-        transparent: true,
-        opacity: 0.2,
-        side: THREE.BackSide 
-      });
+      // Complex rotation pattern
+      particleSystem.rotation.x = Math.sin(t * 0.1) * 0.2;
+      particleSystem.rotation.y = Math.sin(t * 0.2) * 0.1;
       
-      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
-      sphere.add(glowMesh);
+      // Gentle camera movement for parallax effect
+      camera.position.x = Math.sin(t * 0.05) * 0.5;
+      camera.position.y = Math.sin(t * 0.07) * 0.3;
+      camera.lookAt(scene.position);
       
-      return sphere;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
     };
     
-    // Add more orbs with new colors
-    const orb1 = createGlowingOrb([-30, 15, -20], baseColor1, 2.5);
-    const orb2 = createGlowingOrb([25, -10, 10], baseColor2, 3.5);
-    const orb3 = createGlowingOrb([0, 30, -15], baseColor3, 3);
-    const orb4 = createGlowingOrb([-20, -25, 15], baseColor1, 2); // Added extra orb
-    const orb5 = createGlowingOrb([35, 20, 5], baseColor3, 1.5); // Added extra orb
-    
-    scene.add(orb1, orb2, orb3, orb4, orb5);
+    animate(0);
     
     // Handle window resize
     const handleResize = () => {
@@ -181,88 +140,18 @@ const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
     
-    window.addEventListener('resize', handleResize);
-    
-    // Animation loop
-    const animate = () => {
-      timeRef.current += 0.001;
-      
-      // Gently rotate the entire particle system
-      if (particlesRef.current) {
-        particlesRef.current.rotation.y += 0.0004;
-        particlesRef.current.rotation.x += 0.0002;
-      }
-      
-      // Update each particle position based on its speed
-      if (particlesGeometryRef.current) {
-        const positions = particlesGeometryRef.current.attributes.position.array as Float32Array;
-        const speeds = particlesGeometryRef.current.attributes.speed.array as Float32Array;
-        
-        for (let i = 0; i < particlesCount; i++) {
-          const i3 = i * 3;
-          
-          // Add some subtle wave motion
-          const x = positions[i3];
-          const y = positions[i3 + 1];
-          const z = positions[i3 + 2];
-          
-          // Apply noise-based movement - enhanced for more fluid motion
-          positions[i3] = x + Math.sin(timeRef.current + x * 0.05) * 0.08;
-          positions[i3 + 1] = y + Math.cos(timeRef.current + y * 0.05) * 0.08;
-          positions[i3 + 2] = z + Math.sin(timeRef.current + z * 0.05) * 0.08;
-        }
-        
-        particlesGeometryRef.current.attributes.position.needsUpdate = true;
-      }
-      
-      // Animate the orbs with more dynamic movement
-      orb1.position.y = 15 + Math.sin(timeRef.current * 0.8) * 8;
-      orb1.position.x = -30 + Math.cos(timeRef.current * 0.5) * 5;
-      
-      orb2.position.x = 25 + Math.cos(timeRef.current * 0.6) * 10;
-      orb2.position.z = 10 + Math.sin(timeRef.current * 0.7) * 5;
-      
-      orb3.position.z = -15 + Math.sin(timeRef.current * 0.7) * 8;
-      orb3.position.y = 30 + Math.cos(timeRef.current * 0.8) * 7;
-      
-      orb4.position.x = -20 + Math.cos(timeRef.current * 0.9) * 7;
-      orb4.position.y = -25 + Math.sin(timeRef.current * 0.4) * 6;
-      
-      orb5.position.z = 5 + Math.sin(timeRef.current * 0.5) * 10;
-      orb5.position.x = 35 + Math.cos(timeRef.current * 0.7) * 8;
-      
-      renderer.render(scene, camera);
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
+    window.addEventListener("resize", handleResize);
     
     return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameRef.current);
-      if (containerRef.current && containerRef.current.contains(renderer.domElement)) {
-        containerRef.current.removeChild(renderer.domElement);
-      }
-      
-      // Clean up resources
-      if (sceneRef.current) {
-        sceneRef.current.clear();
-      }
-      
-      if (particlesGeometryRef.current) {
-        particlesGeometryRef.current.dispose();
-      }
-      
-      if (particlesMaterialRef.current) {
-        particlesMaterialRef.current.dispose();
-      }
+      window.removeEventListener("resize", handleResize);
     };
-  }, [isDarkMode]);
-  
+  }, [isDarkMode, theme]); // Re-create when theme changes
+
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 z-[-1] opacity-80"
+      className="fixed inset-0 -z-10 opacity-40" 
+      style={{ pointerEvents: "none" }}
     />
   );
 };
