@@ -15,33 +15,30 @@ interface BackgroundEffectsProps {
 const BackgroundEffects: React.FC<BackgroundEffectsProps> = ({ isDarkMode, intensity }) => {
   const isMobile = useIsMobile();
   
-  // Further reduce the number of effects to improve performance
-  const shouldRenderAll = !isMobile && intensity === 'extreme';
-  const shouldRenderMedium = !isMobile && intensity !== 'light';
-  
-  // For light intensity or mobile, only render minimal effects
-  const isMinimal = isMobile || intensity === 'light';
+  // Reduce the number of effects on mobile devices
+  const shouldRenderAll = !isMobile || intensity === 'extreme';
+  const shouldRenderMedium = !isMobile || intensity !== 'light';
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Render basic shapes with reduced density on all devices */}
-      <GeometricShapes isDarkMode={isDarkMode} intensity={isMinimal ? 'light' : intensity} />
+      {/* Always render basic shapes on all devices */}
+      <GeometricShapes isDarkMode={isDarkMode} intensity={intensity} />
       
-      {/* Render lines only on medium+ intensity and desktop */}
-      {shouldRenderMedium && (
+      {/* Render lines on medium+ intensity and all devices, or on desktop */}
+      {(shouldRenderMedium) && (
         <VerticalLines isDarkMode={isDarkMode} intensity={intensity} />
       )}
       
-      {/* Light flares with reduced intensity */}
-      <LightFlares isDarkMode={isDarkMode} intensity={isMinimal ? 'light' : intensity} />
+      {/* Render light flares on all devices */}
+      <LightFlares isDarkMode={isDarkMode} intensity={intensity} />
       
-      {/* Only render particles on desktop for heavy/extreme */}
-      {(intensity === 'heavy' || intensity === 'extreme') && !isMobile && (
+      {/* Conditionally render based on device and intensity */}
+      {(shouldRenderAll || intensity === 'heavy') && (
         <ParticleEffect isDarkMode={isDarkMode} intensity={intensity} />
       )}
       
-      {/* Tech elements only on desktop for extreme intensity */}
-      {shouldRenderAll && (
+      {/* Render tech elements only on desktop for heavy/extreme intensity */}
+      {(shouldRenderAll && !isMobile) && (
         <TechElements isDarkMode={isDarkMode} intensity={intensity} />
       )}
     </div>
