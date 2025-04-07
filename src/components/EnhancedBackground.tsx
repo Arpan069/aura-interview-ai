@@ -12,7 +12,7 @@ interface EnhancedBackgroundProps {
 
 const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   children,
-  intensity = 'heavy',
+  intensity = 'medium',
   variant = 'default'
 }) => {
   const { theme } = useTheme();

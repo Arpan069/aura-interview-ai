@@ -14,6 +14,7 @@ interface BackgroundEffectsProps {
 const BackgroundEffects: React.FC<BackgroundEffectsProps> = ({ isDarkMode, intensity }) => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {/* Only render each component if the required intensity level is met */}
       <GeometricShapes isDarkMode={isDarkMode} intensity={intensity} />
       <VerticalLines isDarkMode={isDarkMode} intensity={intensity} />
       <LightFlares isDarkMode={isDarkMode} intensity={intensity} />

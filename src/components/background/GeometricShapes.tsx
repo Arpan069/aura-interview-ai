@@ -8,7 +8,8 @@ interface GeometricShapesProps {
 }
 
 const GeometricShapes: React.FC<GeometricShapesProps> = ({ isDarkMode, intensity }) => {
-  if (intensity !== 'extreme') return null;
+  // Now render for both 'heavy' and 'extreme' intensities
+  if (intensity !== 'heavy' && intensity !== 'extreme') return null;
   
   return (
     <>

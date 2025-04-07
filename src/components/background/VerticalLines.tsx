@@ -8,7 +8,8 @@ interface VerticalLinesProps {
 }
 
 const VerticalLines: React.FC<VerticalLinesProps> = ({ isDarkMode, intensity }) => {
-  if (intensity !== 'extreme') return null;
+  // Now render vertical lines for 'heavy' and 'extreme' intensities
+  if (intensity !== 'heavy' && intensity !== 'extreme') return null;
   
   return (
     <>
