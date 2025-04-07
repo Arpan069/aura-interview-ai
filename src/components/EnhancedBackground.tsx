@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from "@/components/ThemeProvider";
 import AnimatedBackground from './AnimatedBackground';
 import BackgroundEffects from './background/BackgroundEffects';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EnhancedBackgroundProps {
   children?: React.ReactNode;
@@ -18,6 +19,10 @@ const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [mounted, setMounted] = useState(false);
+  const isMobile = useIsMobile();
+  
+  // Adjust intensity for mobile devices to improve performance
+  const adjustedIntensity = isMobile && intensity === 'extreme' ? 'heavy' : intensity;
   
   // Fix hydration issues
   useEffect(() => {
@@ -31,13 +36,13 @@ const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden">
       {/* Main animated background */}
-      <AnimatedBackground intensity={intensity} />
+      <AnimatedBackground intensity={adjustedIntensity} />
       
       {/* Fixed position background effects */}
-      <BackgroundEffects isDarkMode={isDarkMode} intensity={intensity} />
+      <BackgroundEffects isDarkMode={isDarkMode} intensity={adjustedIntensity} />
       
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 w-full">
         {children}
       </div>
     </div>
