@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ModeToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion, useScroll, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, X } from "lucide-react";
@@ -54,11 +53,11 @@ const Navbar = () => {
             <NavLink href="/#features">Features</NavLink>
             <NavLink href="/#testimonials">Testimonials</NavLink>
             <NavLink href="/#pricing">Pricing</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
+            <NavLink href="/#contact">Contact</NavLink>
           </div>
           
           <div className="flex items-center space-x-4">
-            <ModeToggle />
+            <ThemeToggle />
             
             {/* Desktop login buttons */}
             {!isMobile && (
@@ -141,7 +140,7 @@ const Navbar = () => {
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link to="/contact" className="text-lg font-medium hover:text-brand-primary transition-colors">
+                        <Link to="/#contact" className="text-lg font-medium hover:text-brand-primary transition-colors">
                           Contact
                         </Link>
                       </SheetClose>
