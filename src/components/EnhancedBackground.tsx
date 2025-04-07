@@ -36,13 +36,17 @@ const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden">
       {/* Main animated background */}
-      <AnimatedBackground intensity={adjustedIntensity} />
+      <div className="fixed inset-0 z-0">
+        <AnimatedBackground intensity={adjustedIntensity} />
+      </div>
       
       {/* Fixed position background effects */}
-      <BackgroundEffects isDarkMode={isDarkMode} intensity={adjustedIntensity} />
+      <div className="fixed inset-0 z-0">
+        <BackgroundEffects isDarkMode={isDarkMode} intensity={adjustedIntensity} />
+      </div>
       
-      {/* Content */}
-      <div className="relative z-10 w-full">
+      {/* Content - ensuring it's clearly above background */}
+      <div className="relative z-10 w-full min-h-screen">
         {children}
       </div>
     </div>

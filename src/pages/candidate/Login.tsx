@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -19,13 +18,13 @@ const CandidateLogin = () => {
   };
 
   return (
-    <EnhancedBackground intensity="extreme">
+    <EnhancedBackground intensity="medium">
       <div className="min-h-screen flex flex-col">
-        <div className="absolute top-8 right-8 z-10">
+        <div className="absolute top-8 right-8 z-50">
           <ModeToggle />
         </div>
         
-        <Link to="/" className="absolute top-8 left-8 z-10">
+        <Link to="/" className="absolute top-8 left-8 z-50">
           <img 
             src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
             alt="AI Interview Logo" 
@@ -33,7 +32,9 @@ const CandidateLogin = () => {
           />
         </Link>
         
-        <div className="flex-1 flex items-center justify-center relative z-10 px-4 py-12">
+        <div className="absolute inset-0 bg-background/30 dark:bg-background/50 backdrop-blur-sm z-10"></div>
+        
+        <div className="flex-1 flex items-center justify-center relative z-20 px-4 py-12">
           <div className="container mx-auto flex flex-col lg:flex-row items-center justify-center gap-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -21,7 +21,7 @@ const Navbar = () => {
   const { theme } = useTheme();
   
   useEffect(() => {
-    const unsubscribe = scrollY.onChange(latest => {
+    const unsubscribe = scrollY.on('change', latest => {
       setScrolled(latest > 20);
     });
     
@@ -35,7 +35,7 @@ const Navbar = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 py-2 sm:py-3 transition-all duration-300 ${
-          scrolled ? "backdrop-blur-xl bg-white/90 dark:bg-black/80 shadow-lg" : "bg-transparent"
+          scrolled ? "backdrop-blur-xl bg-white/90 dark:bg-black/80 shadow-lg" : "bg-transparent backdrop-blur-sm bg-white/30 dark:bg-black/30"
         }`}
       >
         <div className="container mx-auto flex justify-between items-center">

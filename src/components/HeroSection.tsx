@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -35,7 +34,6 @@ const HeroSection = () => {
     };
   }, []);
 
-  // Animations for elements
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -57,26 +55,23 @@ const HeroSection = () => {
     }
   };
 
-  const particleCount = 30; // Increased particles for more immersive effect
-  const floatingElementsCount = 12; // More floating elements
-  
+  const particleCount = 30;
+  const floatingElementsCount = 12;
+
   return (
-    <div className="relative min-h-screen overflow-hidden flex items-center" ref={ref}>
-      {/* Animated Background - Different for light/dark modes */}
-      <div className={`absolute inset-0 z-0 ${
+    <div className="relative min-h-screen overflow-hidden flex items-center z-20" ref={ref}>
+      <div className={`absolute inset-0 z-10 ${
         theme === 'dark' 
-          ? 'bg-gradient-to-b from-brand-primary/90 via-brand-primary/80 to-background'
-          : 'bg-gradient-to-b from-slate-50 via-indigo-50 to-white'
+          ? 'bg-gradient-to-b from-brand-primary/50 via-brand-primary/40 to-background/80'
+          : 'bg-gradient-to-b from-slate-50/80 via-indigo-50/80 to-white/80'
       }`}></div>
       
-      {/* Mercor-style Grid Background - more pronounced in light mode */}
-      <div className={`absolute inset-0 bg-grid-pattern ${
+      <div className={`absolute inset-0 bg-grid-pattern z-5 ${
         theme === 'dark' 
           ? 'opacity-10' 
           : 'opacity-30'
       }`}></div>
       
-      {/* Interactive Particles - different styling for light/dark mode */}
       {[...Array(particleCount)].map((_, i) => (
         <motion.div
           key={i}
@@ -109,7 +104,6 @@ const HeroSection = () => {
         />
       ))}
       
-      {/* Mercor-style floating tech elements */}
       {[...Array(isMobile ? 4 : floatingElementsCount)].map((_, i) => (
         <motion.div
           key={`tech-${i}`}
@@ -140,7 +134,6 @@ const HeroSection = () => {
         </motion.div>
       ))}
 
-      {/* 3D Parallax Effect - more pronounced in light mode */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         animate={{
@@ -153,10 +146,9 @@ const HeroSection = () => {
         initial="hidden"
         animate={controls}
         variants={containerVariants}
-        className="container mx-auto px-4 relative z-10 pt-20"
+        className="container mx-auto px-4 relative z-20 pt-20"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          {/* Left Column: Text Content */}
           <div className="text-left">
             <motion.div variants={itemVariants} className="mb-2">
               <span className={`inline-flex items-center px-3 py-1 rounded-full ${
@@ -235,13 +227,11 @@ const HeroSection = () => {
             </motion.div>
           </div>
           
-          {/* Right Column: 3D Image with Animation - Responsive adjustments */}
           <motion.div 
             variants={itemVariants}
             className={`${isMobile ? 'flex' : 'hidden lg:flex'} justify-center items-center relative`}
           >
             <div className="w-full max-w-[500px] h-[400px] md:h-[500px] relative">
-              {/* Animated Circular Elements */}
               <motion.div
                 animate={{ 
                   rotate: 360,
@@ -262,7 +252,6 @@ const HeroSection = () => {
                 }`}
               />
               
-              {/* Main Hero Image */}
               <motion.div
                 animate={{ 
                   y: [0, -20, 0],
@@ -296,7 +285,6 @@ const HeroSection = () => {
                 </div>
               </motion.div>
               
-              {/* Floating Elements - Mercor style, conditionally rendered based on screen size */}
               {!isMobile && (
                 <>
                   <motion.div
@@ -345,7 +333,6 @@ const HeroSection = () => {
                     </div>
                   </motion.div>
 
-                  {/* New floating element - Mercor style */}
                   <motion.div
                     animate={{ 
                       x: [0, 15, 0, -15, 0], 
@@ -375,7 +362,6 @@ const HeroSection = () => {
         </div>
       </motion.div>
       
-      {/* Wave Bottom Effect */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -387,7 +373,6 @@ const HeroSection = () => {
         </svg>
       </motion.div>
 
-      {/* CSS for Mercor-style grid pattern */}
       <style>
         {`
         .bg-grid-pattern {
@@ -406,7 +391,6 @@ const HeroSection = () => {
             : '0 8px 32px rgba(79, 70, 229, 0.15)'};
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
           .bg-grid-pattern {
             background-size: 20px 20px;

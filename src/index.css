@@ -78,8 +78,22 @@
   }
 }
 
+/* Ensure content is visible */
+.z-10 {
+  z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
 .animated-gradient-background {
-  background: linear-gradient(300deg, #4f46e5, #4f46e5, #4646e5, #6366f1);
+  /* Reduced opacity to ensure foreground visibility */
+  background: linear-gradient(300deg, rgba(79,70,229,0.7), rgba(79,70,229,0.7), rgba(70,70,229,0.7), rgba(99,102,241,0.7));
   background-size: 240% 240%;
   animation: animate-background 15s ease infinite;
 }

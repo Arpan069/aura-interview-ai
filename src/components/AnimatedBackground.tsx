@@ -32,15 +32,15 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   }[intensity];
 
   return (
-    <div className="relative w-full min-h-screen">
+    <div className="w-full h-full">
       {/* Three.js animated background */}
       <ThreeBackground isDarkMode={isDarkMode} />
       
       {/* Mercor-style grid background */}
-      <div className="fixed inset-0 mercor-grid pointer-events-none z-0"></div>
+      <div className="absolute inset-0 mercor-grid pointer-events-none"></div>
       
       {/* Animated floating elements - Mercor style */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Animated Floating Elements */}
         {[...Array(particleCount)].map((_, i) => (
           <motion.div

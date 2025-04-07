@@ -23,7 +23,7 @@ const Index = () => {
   }, [controls]);
 
   // Use a less intensive background on mobile
-  const backgroundIntensity = isMobile ? "heavy" : "extreme";
+  const backgroundIntensity = isMobile ? "medium" : "heavy";
 
   return (
     <EnhancedBackground intensity={backgroundIntensity}>
@@ -34,11 +34,11 @@ const Index = () => {
       >
         <Navbar />
         
-        <section id="hero">
+        <section id="hero" className="relative z-20">
           <HeroSection />
         </section>
         
-        <div className="container mx-auto px-4 w-full">
+        <div className="container mx-auto px-4 w-full relative z-20">
           <section id="videos" className="py-8 sm:py-12">
             <VideoCarousel />
           </section>

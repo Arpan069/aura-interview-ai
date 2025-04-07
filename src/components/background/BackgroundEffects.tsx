@@ -20,7 +20,7 @@ const BackgroundEffects: React.FC<BackgroundEffectsProps> = ({ isDarkMode, inten
   const shouldRenderMedium = !isMobile || intensity !== 'light';
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {/* Always render basic shapes on all devices */}
       <GeometricShapes isDarkMode={isDarkMode} intensity={intensity} />
       
