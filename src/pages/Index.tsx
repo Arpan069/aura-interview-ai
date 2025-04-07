@@ -18,12 +18,12 @@ const Index = () => {
   useEffect(() => {
     controls.start({
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.175, 0.885, 0.32, 1.275] }
+      transition: { duration: 0.5, ease: "easeOut" }
     });
   }, [controls]);
 
-  // Use a less intensive background on mobile
-  const backgroundIntensity = isMobile ? "medium" : "heavy";
+  // Reduce background intensity to improve performance
+  const backgroundIntensity = isMobile ? "light" : "medium";
 
   return (
     <EnhancedBackground intensity={backgroundIntensity}>
@@ -34,11 +34,11 @@ const Index = () => {
       >
         <Navbar />
         
-        <section id="hero" className="relative z-20">
+        <section id="hero" className="relative z-30">
           <HeroSection />
         </section>
         
-        <div className="container mx-auto px-4 w-full relative z-20">
+        <div className="container mx-auto px-4 w-full relative z-30">
           <section id="videos" className="py-8 sm:py-12">
             <VideoCarousel />
           </section>
