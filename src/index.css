@@ -1,69 +1,68 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 236 30% 32%;
+    --background: 240 50% 98%;
+    --foreground: 246 40% 30%;
 
     --card: 0 0% 100%;
-    --card-foreground: 236 30% 32%;
+    --card-foreground: 246 40% 30%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 236 30% 32%;
+    --popover-foreground: 246 40% 30%;
 
-    --primary: 236 57% 32%;
+    --primary: 246 84% 59%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 49 100% 50%;
-    --secondary-foreground: 236 57% 32%;
+    --secondary: 240 10% 95%;
+    --secondary-foreground: 246 84% 59%;
 
-    --muted: 236 10% 90%;
-    --muted-foreground: 236 10% 40%;
+    --muted: 246 10% 90%;
+    --muted-foreground: 246 10% 40%;
 
-    --accent: 49 100% 50%;
-    --accent-foreground: 236 57% 32%;
+    --accent: 246 84% 59%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 236 20% 80%;
-    --input: 236 20% 80%;
-    --ring: 236 57% 32%;
+    --border: 246 20% 80%;
+    --input: 246 20% 80%;
+    --ring: 246 84% 59%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 236 30% 10%;
+    --background: 246 30% 10%;
     --foreground: 0 0% 100%;
 
-    --card: 236 30% 15%;
+    --card: 246 30% 13%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 236 30% 13%;
+    --popover: 246 30% 13%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 236 57% 32%;
+    --primary: 246 84% 59%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 49 100% 50%;
-    --secondary-foreground: 236 57% 32%;
+    --secondary: 246 30% 20%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 236 30% 25%;
-    --muted-foreground: 236 10% 70%;
+    --muted: 246 30% 25%;
+    --muted-foreground: 246 10% 70%;
 
-    --accent: 49 100% 50%;
-    --accent-foreground: 236 57% 32%;
+    --accent: 246 84% 59%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 236 30% 25%;
-    --input: 236 30% 25%;
-    --ring: 236 57% 32%;
+    --border: 246 30% 25%;
+    --input: 246 30% 25%;
+    --ring: 246 84% 59%;
   }
 }
 
@@ -78,10 +77,32 @@
   }
 }
 
+/* Z-index enhancements for proper layering */
+.z-0 {
+  z-index: 0;
+}
+
+.z-1 {
+  z-index: 1;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
 .animated-gradient-background {
-  background: linear-gradient(300deg, #2D3277, #2D3277, #2D3277, #FFE600);
+  /* Reduced opacity for performance */
+  background: linear-gradient(300deg, rgba(79,70,229,0.5), rgba(79,70,229,0.5), rgba(70,70,229,0.5), rgba(99,102,241,0.5));
   background-size: 240% 240%;
-  animation: animate-background 15s ease infinite;
+  animation: animate-background 20s ease infinite; /* Slowed down animation */
 }
 
 @keyframes animate-background {
@@ -99,56 +120,42 @@
 .glass-card {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(209, 213, 219, 0.3);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  /* Removed transform scale on hover for better performance */
+  transition: all 0.3s ease;
 }
 
+/* Removed hover transform to prevent zoom effect */
 .glass-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(45, 50, 119, 0.2);
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.2);
 }
 
 .dark .glass-card {
-  background-color: rgba(45, 50, 119, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.125);
+  background-color: rgba(79, 70, 229, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .btn-hover-effect {
   position: relative;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s ease;
 }
 
-.btn-hover-effect:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 255, 240, 0.3), transparent);
-  transform: translateX(-100%);
-  transition: all 0.8s ease;
-}
-
+/* Optimized button hover effect */
 .btn-hover-effect:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 10px 25px rgba(45, 50, 119, 0.3);
-}
-
-.btn-hover-effect:hover:before {
-  transform: translateX(100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
 }
 
 .animate-in {
-  animation: fadeAndSlide 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: fadeAndSlide 0.5s ease-out forwards;
 }
 
 @keyframes fadeAndSlide {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px); /* Reduced movement */
   }
   to {
     opacity: 1;
@@ -156,40 +163,38 @@
   }
 }
 
+/* Optimized card hover */
 .card-hover {
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s ease;
 }
 
+/* Removed scale transform to improve performance */
 .card-hover:hover {
-  transform: translateY(-15px) scale(1.03);
-  box-shadow: 0 20px 40px -10px rgba(45, 50, 119, 0.3), 0 15px 20px -15px rgba(45, 50, 119, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px -10px rgba(79, 70, 229, 0.3), 0 10px 15px -15px rgba(79, 70, 229, 0.25);
 }
 
 .dark .card-hover:hover {
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 15px 20px -15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.5), 0 10px 15px -15px rgba(79, 70, 229, 0.3);
 }
 
+/* Slowed down animation for better performance */
 .floating-element {
-  animation: floating 6s ease-in-out infinite;
+  animation: floating 8s ease-in-out infinite;
 }
 
 @keyframes floating {
   0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-15px) rotate(2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(0) rotate(0deg);
-  }
-  75% {
-    transform: translateY(15px) rotate(-2deg);
+    transform: translateY(-10px);
   }
 }
 
+/* Slowed down rotation */
 .rotate-element {
-  animation: rotate 20s linear infinite;
+  animation: rotate 30s linear infinite;
 }
 
 @keyframes rotate {
@@ -202,7 +207,7 @@
 }
 
 .pulse-element {
-  animation: pulse 3s ease-in-out infinite;
+  animation: pulse 4s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -211,16 +216,16 @@
     opacity: 1;
   }
   50% {
-    transform: scale(1.1);
-    opacity: 0.8;
+    transform: scale(1.05);
+    opacity: 0.85;
   }
 }
 
 .meteor {
   position: absolute;
   height: 1px;
-  background: linear-gradient(90deg, #FFE600, transparent);
-  animation: meteor 6s linear infinite;
+  background: linear-gradient(90deg, #4f46e5, transparent);
+  animation: meteor 8s linear infinite; /* Slowed down animation */
 }
 
 @keyframes meteor {
@@ -240,8 +245,8 @@
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: #FFE600;
-  animation: float-random 10s ease-in-out infinite;
+  background: #4f46e5;
+  animation: float-random 15s ease-in-out infinite; /* Slowed down animation */
 }
 
 @keyframes float-random {
@@ -249,12 +254,99 @@
     transform: translate(0, 0);
   }
   25% {
-    transform: translate(30px, -30px);
+    transform: translate(20px, -20px);
   }
   50% {
-    transform: translate(0, -60px);
+    transform: translate(0, -40px);
   }
   75% {
-    transform: translate(-30px, -30px);
+    transform: translate(-20px, -20px);
   }
+}
+
+/* Mercor-inspired styles */
+.mercor-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+}
+
+.dark .mercor-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.mercor-card {
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 20px;
+  box-shadow: 0 5px 30px rgba(79, 70, 229, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(79, 70, 229, 0.1);
+  transition: all 0.3s ease;
+}
+
+.mercor-card:hover {
+  box-shadow: 0 10px 40px rgba(79, 70, 229, 0.25);
+  transform: translateY(-5px);
+}
+
+.dark .mercor-card {
+  background-color: rgba(30, 30, 46, 0.9);
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.dark .mercor-card:hover {
+  box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);
+}
+
+.mercor-blur-sphere {
+  border-radius: 50%;
+  filter: blur(80px);
+  position: absolute;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+.dark .mercor-blur-sphere {
+  opacity: 0.4;
+}
+
+.mercor-gradient-text {
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .mercor-gradient-text {
+  background: linear-gradient(90deg, #818cf8, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Improved contrast elements */
+.high-contrast-card {
+  background-color: white;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+}
+
+.dark .high-contrast-card {
+  background-color: #1a1b2e;
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.high-contrast-section {
+  background: radial-gradient(ellipse at top, rgba(79, 70, 229, 0.1), transparent),
+              radial-gradient(ellipse at bottom, rgba(79, 70, 229, 0.05), transparent);
+}
+
+.dark .high-contrast-section {
+  background: radial-gradient(ellipse at top, rgba(79, 70, 229, 0.2), transparent),
+              radial-gradient(ellipse at bottom, rgba(30, 30, 50, 1), rgba(20, 20, 35, 1));
 }
