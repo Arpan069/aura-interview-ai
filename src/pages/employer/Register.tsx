@@ -5,16 +5,16 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FiUser, FiMail, FiLock } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiBriefcase } from "react-icons/fi";
 import { ModeToggle } from "@/components/ModeToggle";
 import EnhancedBackground from "@/components/EnhancedBackground";
 
-const CandidateRegister = () => {
+const EmployerRegister = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/candidate/verify-otp');
+    navigate('/employer/dashboard');
   };
 
   return (
@@ -42,8 +42,8 @@ const CandidateRegister = () => {
             >
               <div className="glass-card rounded-xl p-8 shadow-xl">
                 <div className="text-center mb-8">
-                  <h1 className="text-2xl font-bold mb-2">Register as a Candidate</h1>
-                  <p className="text-gray-600 dark:text-gray-400">Create your account to start your interview journey</p>
+                  <h1 className="text-2xl font-bold mb-2">Register as an Employer</h1>
+                  <p className="text-gray-600 dark:text-gray-400">Create your employer account to find the best candidates</p>
                 </div>
                 
                 <form className="space-y-6" onSubmit={handleSubmit}>
@@ -64,6 +64,22 @@ const CandidateRegister = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <label htmlFor="company" className="text-sm font-medium">Company Name</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <FiBriefcase className="text-gray-400" />
+                      </div>
+                      <Input 
+                        id="company"
+                        type="text" 
+                        placeholder="Enter your company name"
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">Email Address</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -72,7 +88,7 @@ const CandidateRegister = () => {
                       <Input 
                         id="email"
                         type="email" 
-                        placeholder="Enter your email"
+                        placeholder="Enter your business email"
                         className="pl-10"
                         required
                       />
@@ -120,7 +136,7 @@ const CandidateRegister = () => {
                       >
                         I agree to the terms and conditions
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         By creating an account, you agree to our{" "}
                         <Link to="/terms" className="text-brand-blue hover:underline">Terms of Service</Link> and{" "}
                         <Link to="/privacy" className="text-brand-blue hover:underline">Privacy Policy</Link>.
@@ -129,13 +145,13 @@ const CandidateRegister = () => {
                   </div>
                   
                   <Button type="submit" className="w-full bg-brand-purple hover:bg-indigo-600">
-                    Register
+                    Create Employer Account
                   </Button>
                 </form>
                 
                 <p className="text-center mt-8 text-sm text-gray-600 dark:text-gray-400">
                   Already have an account?{" "}
-                  <Link to="/candidate/login" className="text-brand-blue font-medium hover:underline">
+                  <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">
                     Login instead
                   </Link>
                 </p>
@@ -149,15 +165,15 @@ const CandidateRegister = () => {
               className="w-full max-w-md flex items-center justify-center"
             >
               <div className="relative w-64 h-64 md:w-80 md:h-80">
-                <div className="absolute inset-0 rounded-full bg-indigo-100/30 dark:bg-indigo-900/20 backdrop-blur-md animate-pulse"></div>
+                <div className="absolute inset-0 rounded-full bg-indigo-100/30 backdrop-blur-md animate-pulse"></div>
                 <img 
                   src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
                   alt="AI Assistant" 
                   className="absolute inset-0 m-auto w-48 h-48 object-contain"
                 />
                 <div className="absolute -bottom-8 left-0 right-0 text-center">
-                  <p className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">Your AI Interview Assistant</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Ready to help you succeed</p>
+                  <p className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">Your AI Hiring Assistant</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Find the best candidates efficiently</p>
                 </div>
               </div>
             </motion.div>
@@ -168,4 +184,4 @@ const CandidateRegister = () => {
   );
 };
 
-export default CandidateRegister;
+export default EmployerRegister;

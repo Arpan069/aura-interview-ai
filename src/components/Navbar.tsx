@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ModeToggle } from "@/components/ModeToggle";
 import { motion, useScroll, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, X } from "lucide-react";
@@ -33,7 +34,7 @@ const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 right-0 z-50 px-4 py-3 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 px-2 sm:px-4 py-2 sm:py-3 transition-all duration-300 ${
           scrolled ? "backdrop-blur-xl bg-white/90 dark:bg-black/80 shadow-lg" : "bg-transparent"
         }`}
       >
@@ -42,22 +43,22 @@ const Navbar = () => {
             <motion.img 
               src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
               alt="AI Interview Logo" 
-              className="h-10" 
+              className="h-8 sm:h-10" 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             />
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
             <NavLink href="/#features">Features</NavLink>
             <NavLink href="/#testimonials">Testimonials</NavLink>
             <NavLink href="/#pricing">Pricing</NavLink>
-            <NavLink href="/#contact">Contact</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <ModeToggle />
             
             {/* Desktop login buttons */}
             {!isMobile && (
@@ -65,7 +66,7 @@ const Navbar = () => {
                 <Link to="/candidate/login">
                   <Button 
                     variant="outline" 
-                    className={`${
+                    className={`text-sm sm:text-base px-2 sm:px-4 py-1 sm:py-2 ${
                       theme === 'dark' 
                         ? 'bg-white/15 hover:bg-white/30 backdrop-blur-sm text-white border-white/30'
                         : 'bg-brand-primary/10 hover:bg-brand-primary/20 backdrop-blur-sm text-brand-primary border-brand-primary/30'
@@ -81,7 +82,7 @@ const Navbar = () => {
                 </Link>
                 <Link to="/employer/login">
                   <Button 
-                    className="bg-brand-primary hover:bg-brand-primary/90 font-medium btn-hover-effect text-white shadow-md shadow-brand-primary/20 dark:shadow-brand-primary/40"
+                    className="text-sm sm:text-base px-2 sm:px-4 py-1 sm:py-2 bg-brand-primary hover:bg-brand-primary/90 font-medium btn-hover-effect text-white shadow-md shadow-brand-primary/20 dark:shadow-brand-primary/40"
                   >
                     <motion.span
                       whileHover={{ scale: 1.05 }}
@@ -103,7 +104,7 @@ const Navbar = () => {
                     size="icon"
                     className="md:hidden"
                   >
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[80vw] bg-background/95 backdrop-blur-lg border-l border-border shadow-xl">
@@ -140,7 +141,7 @@ const Navbar = () => {
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link to="/#contact" className="text-lg font-medium hover:text-brand-primary transition-colors">
+                        <Link to="/contact" className="text-lg font-medium hover:text-brand-primary transition-colors">
                           Contact
                         </Link>
                       </SheetClose>
@@ -180,7 +181,7 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
   return (
     <motion.a
       href={href}
-      className="text-gray-800 dark:text-white/90 hover:text-brand-primary dark:hover:text-white font-medium relative"
+      className="text-gray-800 dark:text-white/90 hover:text-brand-primary dark:hover:text-white font-medium relative text-sm lg:text-base"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
