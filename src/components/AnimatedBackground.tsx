@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import ThreeBackground from './ThreeBackground';
 
 interface AnimatedBackgroundProps {
-  intensity?: 'light' | 'medium' | 'heavy' | 'extreme';
+  intensity?: 'light' | 'medium' | 'heavy';
   children?: React.ReactNode;
 }
 
@@ -20,15 +20,13 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   const particleCount = {
     light: 15,
     medium: 25,
-    heavy: 40,
-    extreme: 60
+    heavy: 40
   }[intensity];
   
   const floatingElementsCount = {
     light: 5,
     medium: 8,
-    heavy: 12,
-    extreme: 20
+    heavy: 12
   }[intensity];
 
   return (
@@ -97,7 +95,7 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
         ))}
         
         {/* Mercor-style floating tech elements */}
-        {(intensity === 'heavy' || intensity === 'extreme') && [...Array(floatingElementsCount)].map((_, i) => (
+        {intensity === 'heavy' && [...Array(floatingElementsCount)].map((_, i) => (
           <motion.div
             key={`tech-${i}`}
             className="absolute"

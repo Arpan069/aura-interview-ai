@@ -8,12 +8,10 @@ import FeatureSection from "../components/FeatureSection";
 import StatsSection from "../components/StatsSection";
 import TestimonialCarousel from "../components/TestimonialCarousel";
 import Footer from "../components/Footer";
-import EnhancedBackground from "../components/EnhancedBackground";
-import { useIsMobile } from "@/hooks/use-mobile";
+import AnimatedBackground from "../components/AnimatedBackground";
 
 const Index = () => {
   const controls = useAnimation();
-  const isMobile = useIsMobile();
   
   useEffect(() => {
     controls.start({
@@ -22,15 +20,12 @@ const Index = () => {
     });
   }, [controls]);
 
-  // Use a less intensive background on mobile
-  const backgroundIntensity = isMobile ? "heavy" : "extreme";
-
   return (
-    <EnhancedBackground intensity={backgroundIntensity}>
+    <AnimatedBackground intensity="heavy">
       <motion.div
         initial={{ opacity: 0 }}
         animate={controls}
-        className="relative min-h-screen w-full"
+        className="relative min-h-screen"
       >
         <Navbar />
         
@@ -38,12 +33,12 @@ const Index = () => {
           <HeroSection />
         </section>
         
-        <div className="container mx-auto px-4 w-full">
-          <section id="videos" className="py-8 sm:py-12">
+        <div className="container mx-auto px-4">
+          <section id="videos" className="py-12">
             <VideoCarousel />
           </section>
           
-          <section id="features" className="high-contrast-section rounded-xl sm:rounded-3xl my-8 sm:my-12">
+          <section id="features" className="high-contrast-section rounded-3xl my-12">
             <FeatureSection />
           </section>
           
@@ -51,14 +46,14 @@ const Index = () => {
             <StatsSection />
           </section>
           
-          <section id="testimonials" className="py-8 sm:py-12">
+          <section id="testimonials" className="py-12">
             <TestimonialCarousel />
           </section>
         </div>
         
         <Footer />
       </motion.div>
-    </EnhancedBackground>
+    </AnimatedBackground>
   );
 };
 
