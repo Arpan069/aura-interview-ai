@@ -1,275 +1,255 @@
 
-import React, { useRef, useEffect } from "react";
-import * as THREE from "three";
-import { useTheme } from "@/components/ThemeProvider";
+import { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 
-interface ThreeBackgroundProps {
-  isDarkMode: boolean;
-}
+type ThreeBackgroundProps = {
+  isDarkMode?: boolean;
+};
 
-const ThreeBackground: React.FC<ThreeBackgroundProps> = ({ isDarkMode }) => {
+const ThreeBackground = ({ isDarkMode = false }: ThreeBackgroundProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
+  const animationFrameRef = useRef<number>(0);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const particlesRef = useRef<THREE.Points | null>(null);
+  const particlesGeometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const particlesMaterialRef = useRef<THREE.PointsMaterial | null>(null);
+  const timeRef = useRef<number>(0);
 
   useEffect(() => {
     if (!containerRef.current) return;
-
-    // Scene setup
+    
+    // Scene
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
     
-    // Set background color based on theme
-    scene.background = new THREE.Color(isDarkMode ? "#0f0f0f" : "#f9f9ff");
+    // Camera
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 50;
     
-    // Camera setup with enhanced perspective
-    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 15;
-    camera.position.y = 2;
-    
-    // Advanced renderer setup with higher quality
+    // Renderer
     const renderer = new THREE.WebGLRenderer({ 
-      antialias: true, 
-      alpha: true,
-      precision: 'highp',
-      powerPreference: 'high-performance'
+      alpha: true, 
+      antialias: true 
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit for performance
-    
-    // Clear any existing canvases
-    if (containerRef.current.querySelector("canvas")) {
-      containerRef.current.querySelector("canvas")?.remove();
-    }
-    
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     containerRef.current.appendChild(renderer.domElement);
     
-    // Create more particles for a richer effect based on screen size
-    const particleCount = window.innerWidth < 768 ? 150 : 300;
-    const particles = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const sizes = new Float32Array(particleCount);
-    const colors = new Float32Array(particleCount * 3);
-    const speeds = new Float32Array(particleCount);
+    // Particles
+    const particlesCount = 2000;
+    const positions = new Float32Array(particlesCount * 3);
+    const colors = new Float32Array(particlesCount * 3);
+    const sizes = new Float32Array(particlesCount);
+    const speeds = new Float32Array(particlesCount);
     
-    // Enhanced colors based on theme
-    const primaryColor = new THREE.Color(isDarkMode ? "#4f46e5" : "#4f46e5");
-    const secondaryColor = new THREE.Color(isDarkMode ? "#a5b4fc" : "#818cf8");
-    const accentColor = new THREE.Color(isDarkMode ? "#ffffff" : "#000000");
+    const particlesGeometry = new THREE.BufferGeometry();
+    particlesGeometryRef.current = particlesGeometry;
     
-    // Populate particles with more sophisticated distribution
-    for (let i = 0; i < particleCount; i++) {
-      // Create a more interesting spatial distribution
-      const radius = Math.random() * 50;
+    // Colors based on theme
+    let baseColor1 = isDarkMode 
+      ? new THREE.Color(0x2D3277) // Dark mode primary
+      : new THREE.Color(0x2D3277); // Light mode primary
+      
+    let baseColor2 = isDarkMode 
+      ? new THREE.Color(0xFFE600) // Dark mode accent
+      : new THREE.Color(0xFFE600); // Light mode accent
+      
+    let baseColor3 = isDarkMode 
+      ? new THREE.Color(0x1A1D3F) // Dark mode deeper shade
+      : new THREE.Color(0x4D5299); // Light mode lighter shade
+    
+    // Create particles with varied sizes and speeds
+    for (let i = 0; i < particlesCount; i++) {
+      const i3 = i * 3;
+      
+      // Position - create a sphere distribution
+      const radius = Math.random() * 80;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
       
-      // Spherical distribution with variation
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta); // x
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * 0.6; // y (flattened)
-      positions[i * 3 + 2] = radius * Math.cos(phi) * 0.8; // z (flattened)
+      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = radius * Math.cos(phi);
       
-      // Varied size distribution for more visual interest
-      sizes[i] = Math.random() * 1.5 + 0.2;
-      
-      // Speed variation for animation
-      speeds[i] = Math.random() * 0.1 + 0.05;
-      
-      // More sophisticated color distribution
+      // Mix between three colors for more variety
       const colorChoice = Math.random();
-      if (colorChoice > 0.85) {
-        // Accent particles (fewer)
-        colors[i * 3] = accentColor.r;
-        colors[i * 3 + 1] = accentColor.g;
-        colors[i * 3 + 2] = accentColor.b;
-      } else if (colorChoice > 0.4) {
-        // Primary particles (many)
-        colors[i * 3] = primaryColor.r;
-        colors[i * 3 + 1] = primaryColor.g;
-        colors[i * 3 + 2] = primaryColor.b;
+      let mixedColor;
+      
+      if (colorChoice < 0.33) {
+        mixedColor = new THREE.Color().lerpColors(
+          baseColor1, baseColor2, Math.random()
+        );
+      } else if (colorChoice < 0.66) {
+        mixedColor = new THREE.Color().lerpColors(
+          baseColor2, baseColor3, Math.random()
+        );
       } else {
-        // Secondary particles (some)
-        colors[i * 3] = secondaryColor.r;
-        colors[i * 3 + 1] = secondaryColor.g;
-        colors[i * 3 + 2] = secondaryColor.b;
+        mixedColor = new THREE.Color().lerpColors(
+          baseColor3, baseColor1, Math.random()
+        );
       }
+      
+      colors[i3] = mixedColor.r;
+      colors[i3 + 1] = mixedColor.g;
+      colors[i3 + 2] = mixedColor.b;
+      
+      // Random sizes
+      sizes[i] = Math.random() * 3;
+      
+      // Random movement speeds
+      speeds[i] = (Math.random() - 0.5) * 0.2;
     }
     
-    particles.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    particles.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
-    particles.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    particles.setAttribute("speed", new THREE.BufferAttribute(speeds, 1));
+    particlesGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(positions, 3)
+    );
+    particlesGeometry.setAttribute(
+      'color',
+      new THREE.BufferAttribute(colors, 3)
+    );
+    particlesGeometry.setAttribute(
+      'size',
+      new THREE.BufferAttribute(sizes, 1)
+    );
+    particlesGeometry.setAttribute(
+      'speed',
+      new THREE.BufferAttribute(speeds, 1)
+    );
     
-    // Using enhanced vertex and fragment shaders for more sophisticated particle effects
-    const particleMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        mousePosition: { value: new THREE.Vector2(0, 0) },
-        pointTexture: { 
-          value: new THREE.TextureLoader().load(
-            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAACXBIWXMAAAsTAAALEwEAmpwYAAABnUlEQVR4nO3bMQEAIAgEQUGtf2ZqAB8RduZuswQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC5ug7g6a5buOVPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHzY3ibHOsu5/vQAAAABJRU5ErkJggg=='
-          )
-        }
-      },
-      vertexShader: `
-        uniform float time;
-        attribute float size;
-        attribute vec3 color;
-        attribute float speed;
-        varying vec3 vColor;
-        uniform vec2 mousePosition;
+    // Particle Material with custom shader
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.7,
+      sizeAttenuation: true,
+      transparent: true,
+      alphaTest: 0.01,
+      opacity: 0.8,
+      vertexColors: true,
+    });
+    particlesMaterialRef.current = particlesMaterial;
+    
+    // Create the particle system
+    const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+    particlesRef.current = particles;
+    scene.add(particles);
 
-        void main() {
-          vColor = color;
-          vec3 pos = position;
-          
-          // Complex animation patterns
-          float waveX = sin(time * speed + pos.x * 0.1) * 0.8;
-          float waveY = cos(time * speed + pos.z * 0.1) * 0.8;
-          float waveZ = sin(time * speed * 0.5 + pos.y * 0.1) * 0.8;
-          
-          // Apply wave motion
-          pos.x += waveX;
-          pos.y += waveY;
-          pos.z += waveZ;
-          
-          // Mouse interaction effect (subtle movement)
-          vec2 mouseEffect = mousePosition * 0.01;
-          pos.x += mouseEffect.x * (40.0 - abs(pos.z)) * 0.05;
-          pos.y -= mouseEffect.y * (40.0 - abs(pos.z)) * 0.05;
-          
-          // Calculate size based on distance and breathing effect
-          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-          float breathing = (sin(time * 0.5) * 0.5 + 1.0) * 0.3 + 0.7;
-          float distanceFactor = min(50.0 / -mvPosition.z, 3.0); // Limit the size growth
-          gl_PointSize = size * breathing * distanceFactor;
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D pointTexture;
-        varying vec3 vColor;
-        
-        void main() {
-          // Improved soft particle effect
-          vec4 texColor = texture2D(pointTexture, gl_PointCoord);
-          
-          // Enhanced glow effect
-          float distanceFromCenter = length(gl_PointCoord - vec2(0.5));
-          float glow = 0.3 * (1.0 - distanceFromCenter);
-          
-          vec3 finalColor = vColor + glow;
-          gl_FragColor = vec4(finalColor, texColor.a);
-          
-          // Discard nearly transparent pixels
-          if (gl_FragColor.a < 0.1) discard;
-        }
-      `,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    });
-    
-    const particleSystem = new THREE.Points(particles, particleMaterial);
-    scene.add(particleSystem);
-    
-    // Add a subtle fog effect
-    scene.fog = new THREE.FogExp2(isDarkMode ? '#090909' : '#f0f0ff', 0.015);
-    
-    // Create central attractor
-    const geometry = new THREE.SphereGeometry(1, 16, 16);
-    const material = new THREE.MeshBasicMaterial({ 
-      color: isDarkMode ? 0x4f46e5 : 0x4f46e5,
-      transparent: true,
-      opacity: 0.1
-    });
-    const centralSphere = new THREE.Mesh(geometry, material);
-    scene.add(centralSphere);
-    
-    // Add subtle light sources
-    const light1 = new THREE.PointLight(0x4f46e5, 1, 100);
-    light1.position.set(15, 15, 15);
-    scene.add(light1);
-    
-    const light2 = new THREE.PointLight(0xa5b4fc, 1, 100);
-    light2.position.set(-15, -15, 15);
-    scene.add(light2);
-    
-    // Mouse interaction tracking
-    const mousePosition = new THREE.Vector2(0, 0);
-    const handleMouseMove = (event: MouseEvent) => {
-      // Convert mouse position to normalized device coordinates (-1 to +1)
-      mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      particleMaterial.uniforms.mousePosition.value = mousePosition;
+    // Add a few larger glowing orbs
+    const createGlowingOrb = (position: [number, number, number], color: THREE.Color, size: number) => {
+      const geometry = new THREE.SphereGeometry(size, 32, 32);
+      const material = new THREE.MeshBasicMaterial({ 
+        color: color, 
+        transparent: true,
+        opacity: 0.4 
+      });
+      
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.position.set(...position);
+      
+      // Add glow effect
+      const glowGeometry = new THREE.SphereGeometry(size * 1.2, 32, 32);
+      const glowMaterial = new THREE.MeshBasicMaterial({ 
+        color: color, 
+        transparent: true,
+        opacity: 0.15,
+        side: THREE.BackSide 
+      });
+      
+      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+      sphere.add(glowMesh);
+      
+      return sphere;
     };
-    window.addEventListener("mousemove", handleMouseMove);
     
-    // Advanced animation with mouse interaction
-    const animate = (time: number) => {
-      const t = time * 0.001; // Convert to seconds
+    // Add a few orbs
+    const orb1 = createGlowingOrb([-30, 15, -20], baseColor1, 2);
+    const orb2 = createGlowingOrb([25, -10, 10], baseColor2, 3);
+    const orb3 = createGlowingOrb([0, 30, -15], baseColor3, 2.5);
+    
+    scene.add(orb1, orb2, orb3);
+    
+    // Handle window resize
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Animation loop
+    const animate = () => {
+      timeRef.current += 0.001;
       
-      // Update shader time uniform
-      particleMaterial.uniforms.time.value = t;
+      // Gently rotate the entire particle system
+      if (particlesRef.current) {
+        particlesRef.current.rotation.y += 0.0003;
+        particlesRef.current.rotation.x += 0.0001;
+      }
       
-      // Complex rotation patterns
-      particleSystem.rotation.x = Math.sin(t * 0.05) * 0.3;
-      particleSystem.rotation.y = Math.cos(t * 0.1) * 0.2;
+      // Update each particle position based on its speed
+      if (particlesGeometryRef.current) {
+        const positions = particlesGeometryRef.current.attributes.position.array as Float32Array;
+        const speeds = particlesGeometryRef.current.attributes.speed.array as Float32Array;
+        
+        for (let i = 0; i < particlesCount; i++) {
+          const i3 = i * 3;
+          
+          // Add some subtle wave motion
+          const x = positions[i3];
+          const y = positions[i3 + 1];
+          const z = positions[i3 + 2];
+          
+          // Apply noise-based movement
+          positions[i3] = x + Math.sin(timeRef.current + x * 0.05) * 0.05;
+          positions[i3 + 1] = y + Math.cos(timeRef.current + y * 0.05) * 0.05;
+          positions[i3 + 2] = z + Math.sin(timeRef.current + z * 0.05) * 0.05;
+        }
+        
+        particlesGeometryRef.current.attributes.position.needsUpdate = true;
+      }
       
-      // Pulse effect for central attractor
-      const pulseScale = 0.9 + Math.sin(t * 0.5) * 0.1;
-      centralSphere.scale.set(pulseScale, pulseScale, pulseScale);
-      centralSphere.rotation.y = t * 0.2;
-      centralSphere.rotation.z = t * 0.1;
-      
-      // Light animation
-      light1.position.x = Math.sin(t * 0.1) * 15;
-      light1.position.y = Math.cos(t * 0.15) * 15;
-      light2.position.x = Math.sin(t * 0.12 + Math.PI) * 15;
-      light2.position.y = Math.cos(t * 0.11 + Math.PI) * 15;
-      
-      // Advanced camera movement for increased parallax
-      camera.position.x = Math.sin(t * 0.05) * 1.5;
-      camera.position.y = Math.sin(t * 0.04) * 0.8;
-      camera.lookAt(scene.position);
+      // Animate the orbs
+      orb1.position.y = 15 + Math.sin(timeRef.current * 0.8) * 5;
+      orb2.position.x = 25 + Math.cos(timeRef.current * 0.6) * 7;
+      orb3.position.z = -15 + Math.sin(timeRef.current * 0.7) * 6;
       
       renderer.render(scene, camera);
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
     
-    animate(0);
-    
-    // Enhanced resize handler for better mobile performance
-    const handleResize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      
-      renderer.setSize(width, height);
-      // Adjust pixel ratio based on device for performance
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    };
-    
-    window.addEventListener("resize", handleResize);
+    animate();
     
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameRef.current);
+      if (containerRef.current && containerRef.current.contains(renderer.domElement)) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
       
-      // Cleanup Three.js resources
-      particles.dispose();
-      particleMaterial.dispose();
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
+      // Clean up resources
+      if (sceneRef.current) {
+        sceneRef.current.clear();
+      }
+      
+      if (particlesGeometryRef.current) {
+        particlesGeometryRef.current.dispose();
+      }
+      
+      if (particlesMaterialRef.current) {
+        particlesMaterialRef.current.dispose();
+      }
     };
-  }, [isDarkMode, theme]); // Re-create when theme changes
-
+  }, [isDarkMode]);
+  
   return (
     <div 
       ref={containerRef} 
-      className="fixed inset-0 -z-10 opacity-60" 
-      style={{ pointerEvents: "none" }}
+      className="fixed inset-0 z-[-1] opacity-70"
     />
   );
 };

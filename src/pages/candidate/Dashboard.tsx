@@ -1,5 +1,6 @@
+
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   BarChart,
@@ -9,8 +10,7 @@ import {
   Clock,
   Award,
   CheckCircle,
-  PlayCircle,
-  LogOut
+  PlayCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,20 +21,10 @@ import ThreeBackground from "@/components/ThreeBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "@/hooks/use-toast";
 
 const CandidateDashboard = () => {
   const { theme } = useTheme();
   const [progress, setProgress] = useState(30);
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -42,14 +32,6 @@ const CandidateDashboard = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
-
-  const handleLogout = () => {
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account",
-    });
-    navigate("/candidate/login");
-  };
 
   const profileData = {
     name: "Alex Johnson",
@@ -174,43 +156,10 @@ const CandidateDashboard = () => {
           
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="border-2 border-primary transition-all hover:scale-105 cursor-pointer">
-                  <AvatarImage src="https://github.com/shadcn.png" alt="Profile" />
-                  <AvatarFallback>AJ</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 animate-in fade-in duration-300 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-primary/20 dark:border-white/10 shadow-lg">
-                <DropdownMenuItem className="cursor-default opacity-70">
-                  Signed in as <span className="font-semibold ml-1">alex.johnson@example.com</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <User className="h-4 w-4 mr-2" /> Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <Calendar className="h-4 w-4 mr-2" /> My Interviews
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <Video className="h-4 w-4 mr-2" /> Practice
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 hover:bg-red-500/10">
-                  <LogOut className="h-4 w-4 mr-2" /> Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            {isMobile && (
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={handleLogout}
-                className="md:hidden border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            )}
+            <Avatar className="border-2 border-primary transition-all hover:scale-105">
+              <AvatarImage src="https://github.com/shadcn.png" alt="Profile" />
+              <AvatarFallback>AJ</AvatarFallback>
+            </Avatar>
           </div>
         </div>
       </header>
@@ -516,9 +465,7 @@ const CandidateDashboard = () => {
                         transition={{ duration: 0.3, delay: 0.1 }}
                         className="flex items-center"
                       >
-                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20">
-                          <Award className="h-6 w-6 text-primary" />
-                        </div>
+                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-xs font-medium text-primary">1</div>
                         <span>Select your desired role from the dropdown</span>
                       </motion.li>
                       
@@ -528,13 +475,7 @@ const CandidateDashboard = () => {
                         transition={{ duration: 0.3, delay: 0.2 }}
                         className="flex items-center"
                       >
-                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                            <line x1="12" x2="12" y1="19" y2="22"/>
-                          </svg>
-                        </div>
+                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-xs font-medium text-primary">2</div>
                         <span>Run the system check to ensure your camera and microphone are working</span>
                       </motion.li>
                       
@@ -544,12 +485,7 @@ const CandidateDashboard = () => {
                         transition={{ duration: 0.3, delay: 0.3 }}
                         className="flex items-center"
                       >
-                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                            <circle cx="12" cy="10" r="3"/>
-                          </svg>
-                        </div>
+                        <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-xs font-medium text-primary">3</div>
                         <span>Click "Start Interview" to begin your AI interview session</span>
                       </motion.li>
                     </ol>
@@ -584,8 +520,9 @@ const CandidateDashboard = () => {
                       <div className="flex items-center">
                         <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
-                            <path d="M12 16v-4"/>
-                            <path d="M12 8h.01"/>
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" x2="12" y1="19" y2="22"/>
                           </svg>
                         </div>
                         <span>Microphone</span>

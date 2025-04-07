@@ -1,6 +1,7 @@
 
 import React, { useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { useTheme } from "@/components/ThemeProvider";
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import VideoCarousel from "../components/VideoCarousel";
@@ -8,10 +9,11 @@ import FeatureSection from "../components/FeatureSection";
 import StatsSection from "../components/StatsSection";
 import TestimonialCarousel from "../components/TestimonialCarousel";
 import Footer from "../components/Footer";
-import AnimatedBackground from "../components/AnimatedBackground";
+import ThreeBackground from "../components/ThreeBackground";
 
 const Index = () => {
   const controls = useAnimation();
+  const { theme } = useTheme();
   
   useEffect(() => {
     controls.start({
@@ -21,39 +23,38 @@ const Index = () => {
   }, [controls]);
 
   return (
-    <AnimatedBackground intensity="heavy">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={controls}
-        className="relative min-h-screen"
-      >
-        <Navbar />
-        
-        <section id="hero">
-          <HeroSection />
-        </section>
-        
-        <div className="container mx-auto px-4">
-          <section id="videos" className="py-12">
-            <VideoCarousel />
-          </section>
-          
-          <section id="features" className="high-contrast-section rounded-3xl my-12">
-            <FeatureSection />
-          </section>
-          
-          <section id="stats">
-            <StatsSection />
-          </section>
-          
-          <section id="testimonials" className="py-12">
-            <TestimonialCarousel />
-          </section>
-        </div>
-        
-        <Footer />
-      </motion.div>
-    </AnimatedBackground>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={controls}
+      className="relative min-h-screen"
+    >
+      <ThreeBackground isDarkMode={theme === 'dark'} />
+      
+      <Navbar />
+      <HeroSection />
+      <div className="container mx-auto px-4">
+        <VideoCarousel />
+        <FeatureSection />
+        <StatsSection />
+        <TestimonialCarousel />
+      </div>
+      <Footer />
+      
+      {/* Animated Meteor Shower */}
+      {[...Array(8)].map((_, i) => (
+        <div
+          key={`meteor-${i}`}
+          className="meteor hidden lg:block"
+          style={{
+            width: `${Math.random() * 300 + 100}px`,
+            top: `${Math.random() * 80}%`,
+            left: `${Math.random() * 100 + 50}%`,
+            animationDelay: `${Math.random() * 10}s`,
+            animationDuration: `${Math.random() * 3 + 3}s`,
+          }}
+        />
+      ))}
+    </motion.div>
   );
 };
 

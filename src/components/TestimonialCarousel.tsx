@@ -13,7 +13,7 @@ const testimonials = [
     role: 'Software Engineer at Google',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D',
     rating: 5,
-    text: "The AI interview practice platform completely transformed my interview preparation. I was struggling with technical interviews, but after practicing with this tool, I landed my dream job at Google. The feedback was accurate and incredibly helpful.",
+    text: 'The AI interview practice platform completely transformed my interview preparation. I was struggling with technical interviews, but after practicing with this tool, I landed my dream job at Google. The feedback was accurate and incredibly helpful.',
     company: 'Google',
     jobType: 'Technical Interview'
   },
@@ -23,7 +23,7 @@ const testimonials = [
     role: 'Product Manager at Microsoft',
     image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D',
     rating: 5,
-    text: "I was nervous about my product management interviews until I found this platform. The AI asked me challenging questions and provided detailed feedback on my responses. It helped me refine my storytelling and product sense, which was exactly what I needed.",
+    text: 'I was nervous about my product management interviews until I found this platform. The AI asked me challenging questions and provided detailed feedback on my responses. It helped me refine my storytelling and product sense, which was exactly what I needed.',
     company: 'Microsoft',
     jobType: 'Product Management'
   },
@@ -33,7 +33,7 @@ const testimonials = [
     role: 'Data Scientist at Amazon',
     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D',
     rating: 4,
-    text: "As someone transitioning into data science, I needed a way to practice technical interviews. This platform provided realistic scenarios and questions. The AI\"s ability to assess my technical explanations was impressive and helped me identify areas to improve.",
+    text: 'As someone transitioning into data science, I needed a way to practice technical interviews. This platform provided realistic scenarios and questions. The AI's ability to assess my technical explanations was impressive and helped me identify areas to improve.',
     company: 'Amazon',
     jobType: 'Data Science'
   },
@@ -43,7 +43,7 @@ const testimonials = [
     role: 'UX Designer at Apple',
     image: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZmFjZXxlbnwwfHwwfHx8MA%3D%3D',
     rating: 5,
-    text: "The design-specific interview questions and feedback were exactly what I needed to prepare for my UX role. The platform helped me articulate my design decisions and process clearly, which impressed my interviewers at Apple.",
+    text: 'The design-specific interview questions and feedback were exactly what I needed to prepare for my UX role. The platform helped me articulate my design decisions and process clearly, which impressed my interviewers at Apple.',
     company: 'Apple',
     jobType: 'Design Interview'
   },
@@ -53,7 +53,7 @@ const testimonials = [
     role: 'Front-End Developer at Meta',
     image: 'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGZhY2V8ZW58MHx8MHx8fDA%3D',
     rating: 5,
-    text: "I used this platform to prepare for my front-end developer interviews, and it was a game-changer. The technical questions were challenging and relevant. The platform\"s feedback helped me improve how I explain my coding decisions.",
+    text: 'I used this platform to prepare for my front-end developer interviews, and it was a game-changer. The technical questions were challenging and relevant. The platform's feedback helped me improve how I explain my coding decisions.',
     company: 'Meta',
     jobType: 'Technical Interview'
   }

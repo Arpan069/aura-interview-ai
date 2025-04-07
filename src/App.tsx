@@ -18,7 +18,6 @@ import CandidateDashboard from "./pages/candidate/Dashboard";
 
 // Employer pages
 import EmployerLogin from "./pages/employer/Login";
-import EmployerDashboard from "./pages/employer/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +26,7 @@ const App = () => (
     <ThemeProvider defaultTheme="light">
       <TooltipProvider>
         <Toaster />
-        <Sonner position="top-right" closeButton />
+        <Sonner />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -44,7 +43,6 @@ const App = () => (
             
             {/* Employer routes */}
             <Route path="/employer/login" element={<EmployerLogin />} />
-            <Route path="/employer/dashboard" element={<EmployerDashboard />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
