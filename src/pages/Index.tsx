@@ -8,7 +8,7 @@ import FeatureSection from "../components/FeatureSection";
 import StatsSection from "../components/StatsSection";
 import TestimonialCarousel from "../components/TestimonialCarousel";
 import Footer from "../components/Footer";
-import AnimatedBackground from "../components/AnimatedBackground";
+import EnhancedBackground from "../components/EnhancedBackground";
 
 const Index = () => {
   const controls = useAnimation();
@@ -21,7 +21,7 @@ const Index = () => {
   }, [controls]);
 
   return (
-    <AnimatedBackground intensity="heavy">
+    <EnhancedBackground intensity="extreme">
       <motion.div
         initial={{ opacity: 0 }}
         animate={controls}
@@ -53,7 +53,7 @@ const Index = () => {
         
         <Footer />
       </motion.div>
-    </AnimatedBackground>
+    </EnhancedBackground>
   );
 };
 
