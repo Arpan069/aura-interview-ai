@@ -1,6 +1,6 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useRef } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
@@ -8,36 +8,44 @@ import { ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
+import VideoCarousel from "@/components/VideoCarousel";
 
 const Index = () => {
   const { theme } = useTheme();
   const isMobile = useIsMobile();
   const isDarkMode = theme === 'dark';
+  const testimonialRef = useRef<HTMLDivElement>(null);
+
+  // Function to scroll to testimonials section
+  const scrollToTestimonials = () => {
+    testimonialRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/95">
-      {/* Simple background gradient overlay */}
+      {/* Simple background gradient overlay with reduced intensity */}
       <div className={`fixed inset-0 ${
         isDarkMode 
-          ? 'bg-gradient-to-br from-brand-primary/10 via-transparent to-background/80'
-          : 'bg-gradient-to-br from-brand-primary/5 via-transparent to-background/40'
+          ? 'bg-gradient-to-br from-brand-primary/5 via-transparent to-background/60'
+          : 'bg-gradient-to-br from-brand-primary/3 via-transparent to-background/30'
       }`}></div>
       
-      {/* Background grid pattern */}
-      <div className={`fixed inset-0 mercor-grid opacity-30 ${
-        isDarkMode ? 'opacity-10' : 'opacity-30'
+      {/* Background grid pattern with reduced opacity */}
+      <div className={`fixed inset-0 mercor-grid ${
+        isDarkMode ? 'opacity-5' : 'opacity-20'
       }`}></div>
       
       {/* Navbar */}
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center relative z-10 px-4 py-12">
+      <main className="flex-grow flex flex-col relative z-10 px-4 py-12">
         <div className="container mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="flex flex-col lg:flex-row items-center justify-between gap-12"
+            className="flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[70vh]"
           >
             {/* Left side content */}
             <div className="w-full lg:w-1/2 text-center lg:text-left">
@@ -63,9 +71,9 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
-                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8"
               >
-                <Link to="/candidate/login">
+                <RouterLink to="/candidate/login">
                   <Button 
                     size="lg" 
                     className="w-full sm:w-auto bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg font-medium py-6 px-8 rounded-xl text-base"
@@ -73,9 +81,9 @@ const Index = () => {
                     I am a Candidate
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
-                </Link>
+                </RouterLink>
                 
-                <Link to="/employer/login">
+                <RouterLink to="/employer/login">
                   <Button 
                     variant="outline" 
                     size="lg" 
@@ -88,7 +96,22 @@ const Index = () => {
                     I want to Hire
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
-                </Link>
+                </RouterLink>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.5 }}
+              >
+                <Button 
+                  variant="link" 
+                  onClick={scrollToTestimonials}
+                  className="text-brand-primary font-medium"
+                >
+                  See Testimonials
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
               </motion.div>
               
               <motion.div 
@@ -133,11 +156,11 @@ const Index = () => {
                     className="w-3/5 h-auto object-contain z-10"
                   />
                   
-                  {/* Simple decorative elements */}
+                  {/* Simple decorative elements with reduced animation */}
                   <motion.div
                     animate={{ 
                       rotate: 360,
-                      transition: { duration: 20, repeat: Infinity, ease: "linear" }
+                      transition: { duration: 40, repeat: Infinity, ease: "linear" }
                     }}
                     className={`absolute w-full h-full rounded-full border-2 border-dashed ${
                       isDarkMode ? 'border-white/10' : 'border-brand-primary/10'
@@ -147,7 +170,7 @@ const Index = () => {
                   <motion.div
                     animate={{ 
                       rotate: -360,
-                      transition: { duration: 25, repeat: Infinity, ease: "linear" }
+                      transition: { duration: 50, repeat: Infinity, ease: "linear" }
                     }}
                     className={`absolute w-3/4 h-3/4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed ${
                       isDarkMode ? 'border-white/20' : 'border-brand-primary/20'
@@ -155,7 +178,7 @@ const Index = () => {
                   />
                 </div>
                 
-                {/* Feature callouts - only show on larger screens */}
+                {/* Feature callouts - only show on larger screens with reduced animation */}
                 {!isMobile && (
                   <>
                     <motion.div 
@@ -188,6 +211,16 @@ const Index = () => {
               </div>
             </motion.div>
           </motion.div>
+        </div>
+
+        {/* Video Carousel Section */}
+        <div className="container mx-auto mt-16">
+          <VideoCarousel />
+        </div>
+        
+        {/* Testimonial Section */}
+        <div ref={testimonialRef}>
+          <TestimonialCarousel />
         </div>
       </main>
       

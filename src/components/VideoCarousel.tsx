@@ -1,8 +1,9 @@
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/ThemeProvider";
 
 const carouselData = [
   {
@@ -38,6 +39,8 @@ const VideoCarousel = () => {
   const controls = useAnimation();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const nextSlide = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % carouselData.length);
@@ -49,22 +52,22 @@ const VideoCarousel = () => {
     );
   };
 
-  // Auto advance carousel
-  React.useEffect(() => {
+  // Auto advance carousel with reduced frequency
+  useEffect(() => {
     const interval = setInterval(() => {
       nextSlide();
-    }, 5000); // Change slide every 5 seconds
+    }, 8000); // Change slide every 8 seconds (reduced from 5 seconds)
     
     return () => clearInterval(interval);
   }, []);
 
   // Animation when component comes into view
-  React.useEffect(() => {
+  useEffect(() => {
     if (isInView) {
       controls.start({
         opacity: 1,
         y: 0,
-        transition: { duration: 0.8, ease: [0.175, 0.885, 0.32, 1.275] }
+        transition: { duration: 0.8, ease: "easeOut" }
       });
     }
   }, [controls, isInView]);
@@ -74,24 +77,23 @@ const VideoCarousel = () => {
       ref={ref}
       initial={{ opacity: 0, y: 50 }}
       animate={controls}
-      className="relative w-full max-w-5xl mx-auto mt-20 mb-24 overflow-hidden rounded-2xl shadow-2xl"
+      className="relative w-full max-w-5xl mx-auto mt-20 mb-24 overflow-hidden rounded-2xl shadow-xl"
     >
-      <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-brand-primary/5">
-        {/* Decorative elements */}
-        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-brand-secondary/20 blur-3xl"></div>
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-brand-primary/20 blur-3xl"></div>
+      <div className="relative h-[400px] md:h-[500px] bg-brand-primary/5">
+        {/* Simplified decorative elements */}
+        <div className={`absolute -top-10 -left-10 w-40 h-40 rounded-full ${isDark ? 'bg-brand-secondary/10' : 'bg-brand-secondary/20'} blur-3xl`}></div>
+        <div className={`absolute -bottom-10 -right-10 w-40 h-40 rounded-full ${isDark ? 'bg-brand-primary/10' : 'bg-brand-primary/20'} blur-3xl`}></div>
         
         <motion.div 
           ref={carouselRef}
           className="flex h-full"
           animate={{ x: `-${activeIndex * 100}%` }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
+          transition={{ type: "spring", stiffness: 80, damping: 20 }}
         >
           {carouselData.map((item, index) => (
             <div key={item.id} className="relative min-w-full h-full">
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 z-10"></div>
               
-              {/* Image instead of video */}
               <img 
                 src={item.thumbnail}
                 alt={item.title}
@@ -105,24 +107,11 @@ const VideoCarousel = () => {
                   transition={{ duration: 0.5 }}
                 >
                   <h2 className="text-white text-2xl md:text-3xl font-bold mb-4">{item.title}</h2>
-                  <Button className="bg-brand-secondary text-brand-primary hover:bg-brand-secondary/90 btn-hover-effect">
+                  <Button className="bg-brand-secondary text-brand-primary hover:bg-brand-secondary/90">
                     Learn More
                   </Button>
                 </motion.div>
               </div>
-              
-              <motion.div 
-                className="absolute inset-0 flex items-center justify-center z-20"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: activeIndex === index ? 1 : 0, scale: activeIndex === index ? 1 : 0.8 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-secondary backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer hover:bg-brand-secondary/80 transition-all transform hover:scale-110">
-                  <svg className="w-8 h-8 text-brand-primary" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </motion.div>
             </div>
           ))}
         </motion.div>
@@ -131,7 +120,7 @@ const VideoCarousel = () => {
       <Button
         variant="outline"
         size="icon"
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg"
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-md"
         onClick={prevSlide}
       >
         <ChevronLeft className="h-6 w-6" />
@@ -140,7 +129,7 @@ const VideoCarousel = () => {
       <Button
         variant="outline"
         size="icon"
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-md"
         onClick={nextSlide}
       >
         <ChevronRight className="h-6 w-6" />
@@ -154,6 +143,7 @@ const VideoCarousel = () => {
               index === activeIndex ? "bg-brand-secondary w-8" : "bg-white/50 w-2"
             }`}
             onClick={() => setActiveIndex(index)}
+            aria-label={`Go to slide ${index + 1}`}
           ></button>
         ))}
       </div>

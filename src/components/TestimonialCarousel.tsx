@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,8 +64,7 @@ const TestimonialCarousel = () => {
   const [direction, setDirection] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const { theme } = useTheme();
-  const controls = useAnimation();
-
+  
   const nextTestimonial = () => {
     setDirection(1);
     setActiveIndex((prev) => (prev + 1) % testimonials.length);
@@ -76,17 +75,12 @@ const TestimonialCarousel = () => {
     setActiveIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
   };
 
+  // Reduced auto-rotation interval for better performance
   useEffect(() => {
     // Start auto-rotation
     intervalRef.current = window.setInterval(() => {
       nextTestimonial();
-    }, 8000);
-    
-    // Animate background patterns
-    controls.start({
-      backgroundPosition: ['0% 0%', '100% 100%'],
-      transition: { duration: 20, repeat: Infinity, repeatType: 'reverse', ease: 'linear' }
-    });
+    }, 12000); // Increased from 8000ms to 12000ms
     
     return () => {
       if (intervalRef.current) {
@@ -101,7 +95,7 @@ const TestimonialCarousel = () => {
       clearInterval(intervalRef.current);
       intervalRef.current = window.setInterval(() => {
         nextTestimonial();
-      }, 8000);
+      }, 12000); // Increased from 8000ms to 12000ms
     }
   }, [activeIndex]);
 
@@ -109,23 +103,20 @@ const TestimonialCarousel = () => {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
       opacity: 0,
-      scale: 0.9,
     }),
     center: {
       x: 0,
       opacity: 1,
-      scale: 1,
       transition: {
         duration: 0.5,
         type: 'spring',
-        stiffness: 100,
+        stiffness: 80, // Reduced from 100
         damping: 15
       }
     },
     exit: (direction: number) => ({
       x: direction > 0 ? -1000 : 1000,
       opacity: 0,
-      scale: 0.9,
       transition: {
         duration: 0.5
       }
@@ -146,21 +137,14 @@ const TestimonialCarousel = () => {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1 }}
       viewport={{ once: true, margin: "-100px" }}
+      id="testimonials"
     >
-      {/* Background pattern */}
-      <motion.div 
-        className="absolute inset-0 z-0 opacity-10"
-        animate={controls}
-        style={{
-          background: `radial-gradient(circle at 20% 20%, ${theme === 'dark' ? '#FFE600' : '#2D3277'} 0%, transparent 8%), 
-                      radial-gradient(circle at 80% 80%, ${theme === 'dark' ? '#2D3277' : '#FFE600'} 0%, transparent 8%)`,
-          backgroundSize: '80px 80px',
-        }}
-      />
+      {/* Simplified background pattern */}
+      <div className="absolute inset-0 z-0 opacity-10 bg-gradient-to-br from-brand-primary/10 to-transparent"></div>
       
-      {/* Decorative elements */}
-      <div className="absolute top-10 left-10 w-72 h-72 bg-brand-secondary/20 rounded-full filter blur-3xl opacity-50" />
-      <div className="absolute bottom-10 right-10 w-72 h-72 bg-brand-primary/20 rounded-full filter blur-3xl opacity-50" />
+      {/* Reduced decorative elements */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-brand-secondary/10 rounded-full filter blur-3xl opacity-30"></div>
+      <div className="absolute bottom-10 right-10 w-72 h-72 bg-brand-primary/10 rounded-full filter blur-3xl opacity-30"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
@@ -196,7 +180,7 @@ const TestimonialCarousel = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
                   {/* Left side - Testimonial */}
-                  <div className="bg-white dark:bg-brand-primary/20 p-8 rounded-2xl shadow-xl relative flex flex-col justify-between transform transition-all duration-500 hover:scale-[1.02] border border-brand-secondary/20">
+                  <div className="bg-white dark:bg-brand-primary/20 p-8 rounded-2xl shadow-xl relative flex flex-col justify-between border border-brand-secondary/20">
                     <div>
                       <div className="absolute top-6 right-6 text-brand-secondary opacity-30">
                         <Quote size={48} />
@@ -238,10 +222,10 @@ const TestimonialCarousel = () => {
                   </div>
                   
                   {/* Right side - Stats/Animated elements */}
-                  <div className="bg-brand-primary text-white p-8 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-center transform transition-all duration-500 hover:scale-[1.02]">
-                    {/* Animated background elements */}
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-brand-secondary/20 rounded-full filter blur-xl"></div>
-                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-secondary/10 rounded-full filter blur-xl"></div>
+                  <div className="bg-brand-primary text-white p-8 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-center">
+                    {/* Simplified animated background elements */}
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-brand-secondary/10 rounded-full filter blur-xl"></div>
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-brand-secondary/5 rounded-full filter blur-xl"></div>
                     
                     <div className="relative z-10">
                       <h3 className="text-2xl font-bold mb-8">Why Candidates Love Us</h3>
