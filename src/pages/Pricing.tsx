@@ -7,13 +7,16 @@ import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// Define a type for the allowed button variants
+type ButtonVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+
 const PricingTier = ({ 
   title, 
   price, 
   features, 
   isPopular = false, 
   buttonText = "Get Started",
-  buttonVariant = "default",
+  buttonVariant = "default" as ButtonVariant, // Add type assertion here
   delay = 0
 }) => {
   const { theme } = useTheme();
@@ -72,7 +75,7 @@ const PricingTier = ({
       </ul>
       
       <Button 
-        variant={buttonVariant}
+        variant={buttonVariant as ButtonVariant}
         className={`w-full ${
           buttonVariant === "outline" && isPopular && !isDarkMode 
             ? "border-white text-white hover:bg-white/10" 
