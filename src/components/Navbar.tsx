@@ -1,11 +1,16 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import NavbarLogo from "./navbar/NavbarLogo";
+import DesktopNav from "./navbar/DesktopNav";
+import MobileNav from "./navbar/MobileNav";
+import AuthButtons from "./navbar/AuthButtons";
+import { NavItem } from "@/types/navbar";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,7 +47,7 @@ const Navbar = () => {
   const isOnDashboardPage = location.pathname.includes("/dashboard");
 
   // Main navigation items
-  const navItems = [
+  const navItems: NavItem[] = [
     { label: "Home", href: "/" },
     { label: "Features", href: "/#features" },
     { label: "About", href: "/about" },
@@ -67,64 +72,20 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img 
-              src="https://interviewstaging.shiksak.com/storage/customimages/ai-interviewlogo.png" 
-              alt="Aura Interview AI" 
-              className="h-9 w-auto mr-2"
-            />
-            <span className={`font-bold text-xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Aura AI</span>
-          </Link>
+          <NavbarLogo />
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link 
-                key={item.label} 
-                to={item.href}
-                className={`text-sm font-medium px-1 py-1 border-b-2 transition-colors ${
-                  location.pathname === item.href
-                    ? isDarkMode
-                      ? 'border-white text-white'
-                      : 'border-brand-primary text-brand-primary'
-                    : isDarkMode
-                      ? 'border-transparent text-white/70 hover:text-white hover:border-white/50'
-                      : 'border-transparent text-gray-600 hover:text-brand-primary hover:border-brand-primary/50'
-                }`}
-                onClick={(e) => {
-                  if (item.href.startsWith('#') && location.pathname === '/') {
-                    e.preventDefault();
-                    document.querySelector(item.href)?.scrollIntoView({ 
-                      behavior: 'smooth' 
-                    });
-                  }
-                  closeMenu();
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <DesktopNav navItems={navItems} closeMenu={closeMenu} />
 
           {/* Right Side - Auth & Theme Toggle */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Only show auth buttons on home and general pages, not when in a dashboard or specific auth flow */}
             {!isOnDashboardPage && (
-              <>
-                {isOnLoginPage ? (
-                  <Link to={dashboardLink}>
-                    <Button variant="default" size="sm">
-                      Dashboard
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link to={loginLink}>
-                    <Button variant="outline" size="sm">
-                      Login
-                    </Button>
-                  </Link>
-                )}
-              </>
+              <AuthButtons 
+                isOnDashboardPage={isOnDashboardPage}
+                isOnLoginPage={isOnLoginPage}
+                loginLink={loginLink}
+                dashboardLink={dashboardLink}
+              />
             )}
             
             {/* Theme Toggle Button */}
@@ -141,72 +102,16 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`md:hidden overflow-hidden ${
-              isDarkMode ? 'bg-background/95' : 'bg-white/95'
-            } backdrop-blur-md`}
-          >
-            <div className="container mx-auto px-4 py-4 space-y-3">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className={`block px-4 py-2 rounded-lg text-base font-medium ${
-                    location.pathname === item.href
-                      ? isDarkMode
-                        ? 'bg-white/10 text-white'
-                        : 'bg-brand-primary/10 text-brand-primary'
-                      : isDarkMode
-                        ? 'text-white/70 hover:bg-white/5 hover:text-white'
-                        : 'text-gray-600 hover:bg-brand-primary/5 hover:text-brand-primary'
-                  }`}
-                  onClick={() => {
-                    if (item.href.startsWith('#') && location.pathname === '/') {
-                      document.querySelector(item.href)?.scrollIntoView({ 
-                        behavior: 'smooth' 
-                      });
-                    }
-                    closeMenu();
-                  }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              
-              {/* Only show auth buttons on home and general pages, not when in a dashboard or specific auth flow */}
-              {!isOnDashboardPage && (
-                <>
-                  {isOnLoginPage ? (
-                    <Link to={dashboardLink} onClick={closeMenu}>
-                      <Button variant="default" className="w-full mt-4">
-                        Dashboard
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link to={loginLink} onClick={closeMenu}>
-                      <Button variant="outline" className="w-full mt-4">
-                        Login
-                      </Button>
-                    </Link>
-                  )}
-                </>
-              )}
-              
-              <Button variant="ghost" size="sm" className="w-full flex justify-between items-center mt-2" onClick={closeMenu}>
-                Close Menu
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Navigation Menu */}
+      <MobileNav 
+        isOpen={isOpen}
+        closeMenu={closeMenu}
+        navItems={navItems}
+        isOnDashboardPage={isOnDashboardPage}
+        isOnLoginPage={isOnLoginPage}
+        loginLink={loginLink}
+        dashboardLink={dashboardLink}
+      />
     </motion.header>
   );
 };
