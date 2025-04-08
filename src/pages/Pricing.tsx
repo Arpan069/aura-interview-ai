@@ -72,7 +72,7 @@ const PricingTier = ({
       </ul>
       
       <Button 
-        variant={buttonVariant} 
+        variant={buttonVariant}
         className={`w-full ${
           buttonVariant === "outline" && isPopular && !isDarkMode 
             ? "border-white text-white hover:bg-white/10" 
