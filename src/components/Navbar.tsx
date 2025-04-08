@@ -44,10 +44,8 @@ const Navbar = () => {
   // Main navigation items
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Features", href: "/#features" },
-    { label: "About", href: "/about" },
+    { label: "Features", href: "#features" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Contact", href: "/contact" },
     { label: "Testimonials", href: "/#testimonials" },
   ];
 
@@ -98,7 +96,6 @@ const Navbar = () => {
                       behavior: 'smooth' 
                     });
                   }
-                  closeMenu();
                 }}
               >
                 {item.label}

@@ -76,7 +76,7 @@ const Index = () => {
                 <RouterLink to="/candidate/login">
                   <Button 
                     size="lg" 
-                    className={`w-full sm:w-auto bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg font-medium py-6 px-8 rounded-xl text-base`}
+                    className="w-full sm:w-auto bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg font-medium py-6 px-8 rounded-xl text-base"
                   >
                     I am a Candidate
                     <ChevronRight className="ml-1 h-4 w-4" />
@@ -219,7 +219,7 @@ const Index = () => {
         </div>
         
         {/* Testimonial Section */}
-        <div ref={testimonialRef} id="testimonials">
+        <div ref={testimonialRef}>
           <TestimonialCarousel />
         </div>
       </main>
