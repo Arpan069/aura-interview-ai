@@ -1,94 +1,65 @@
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { motion, useAnimation, useInView } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const videoData = [
+const carouselData = [
   {
     id: 1,
     title: "Mock Interview For Software Engineering",
-    thumbnail: "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop",
-    video: "https://assets.mixkit.co/videos/preview/mixkit-software-developer-working-on-code-screen-close-up-shot-4790-large.mp4"
+    thumbnail: "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop"
   },
   {
     id: 2,
     title: "How To Ace Your Data Science Interview",
-    thumbnail: "https://images.unsplash.com/photo-1558746204-8f5be0fce8b3?q=80&w=2070&auto=format&fit=crop",
-    video: "https://assets.mixkit.co/videos/preview/mixkit-talking-on-video-call-considering-a-project-idea-7802-large.mp4"
+    thumbnail: "https://images.unsplash.com/photo-1558746204-8f5be0fce8b3?q=80&w=2070&auto=format&fit=crop"
   },
   {
     id: 3,
     title: "Product Management Interview Tips",
-    thumbnail: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop",
-    video: "https://assets.mixkit.co/videos/preview/mixkit-woman-typing-on-a-laptop-in-a-modern-office-5695-large.mp4"
+    thumbnail: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
   },
   {
     id: 4,
     title: "UI/UX Design Interview Best Practices",
-    thumbnail: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop",
-    video: "https://assets.mixkit.co/videos/preview/mixkit-man-working-on-his-laptop-308-large.mp4"
+    thumbnail: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop"
   },
   {
     id: 5,
     title: "Machine Learning Interview Questions",
-    thumbnail: "https://images.unsplash.com/photo-1518186233392-c232efbf2373?q=80&w=2074&auto=format&fit=crop",
-    video: "https://assets.mixkit.co/videos/preview/mixkit-closeup-view-of-a-persons-hand-typing-on-a-laptop-keyboard-42854-large.mp4"
+    thumbnail: "https://images.unsplash.com/photo-1518186233392-c232efbf2373?q=80&w=2074&auto=format&fit=crop"
   },
 ];
 
 const VideoCarousel = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const controls = useAnimation();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  // Set up video refs
-  useEffect(() => {
-    videoRefs.current = videoRefs.current.slice(0, videoData.length);
-  }, []);
-
   const nextSlide = () => {
-    setActiveIndex((prevIndex) => (prevIndex + 1) % videoData.length);
+    setActiveIndex((prevIndex) => (prevIndex + 1) % carouselData.length);
   };
 
   const prevSlide = () => {
     setActiveIndex((prevIndex) => 
-      prevIndex === 0 ? videoData.length - 1 : prevIndex - 1
+      prevIndex === 0 ? carouselData.length - 1 : prevIndex - 1
     );
   };
 
   // Auto advance carousel
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       nextSlide();
-    }, 10000); // Change slide every 10 seconds
+    }, 5000); // Change slide every 5 seconds
     
     return () => clearInterval(interval);
   }, []);
 
-  // Manage video playback based on active index
-  useEffect(() => {
-    // Pause all videos
-    videoRefs.current.forEach((video, index) => {
-      if (video) {
-        if (index === activeIndex) {
-          // Play the active video, muted for autoplay
-          video.muted = true;
-          video.currentTime = 0;
-          video.play().catch(e => console.log("Video autoplay prevented:", e));
-        } else {
-          // Pause all other videos
-          video.pause();
-        }
-      }
-    });
-  }, [activeIndex]);
-
   // Animation when component comes into view
-  useEffect(() => {
+  React.useEffect(() => {
     if (isInView) {
       controls.start({
         opacity: 1,
@@ -116,18 +87,15 @@ const VideoCarousel = () => {
           animate={{ x: `-${activeIndex * 100}%` }}
           transition={{ type: "spring", stiffness: 100, damping: 20 }}
         >
-          {videoData.map((item, index) => (
+          {carouselData.map((item, index) => (
             <div key={item.id} className="relative min-w-full h-full">
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 z-10"></div>
               
-              {/* Video element */}
-              <video
-                ref={el => videoRefs.current[index] = el}
-                src={item.video}
-                poster={item.thumbnail}
+              {/* Image instead of video */}
+              <img 
+                src={item.thumbnail}
+                alt={item.title}
                 className="w-full h-full object-cover"
-                playsInline
-                loop
               />
               
               <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
@@ -138,7 +106,7 @@ const VideoCarousel = () => {
                 >
                   <h2 className="text-white text-2xl md:text-3xl font-bold mb-4">{item.title}</h2>
                   <Button className="bg-brand-secondary text-brand-primary hover:bg-brand-secondary/90 btn-hover-effect">
-                    Watch Demo
+                    Learn More
                   </Button>
                 </motion.div>
               </div>
@@ -163,7 +131,7 @@ const VideoCarousel = () => {
       <Button
         variant="outline"
         size="icon"
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg animate-pulse-light"
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg"
         onClick={prevSlide}
       >
         <ChevronLeft className="h-6 w-6" />
@@ -172,14 +140,14 @@ const VideoCarousel = () => {
       <Button
         variant="outline"
         size="icon"
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg animate-pulse-light"
+        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/30 rounded-full z-30 border-white/20 text-white shadow-lg"
         onClick={nextSlide}
       >
         <ChevronRight className="h-6 w-6" />
       </Button>
 
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
-        {videoData.map((_, index) => (
+        {carouselData.map((_, index) => (
           <button
             key={index}
             className={`h-2 rounded-full transition-all duration-500 ${

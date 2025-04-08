@@ -22,8 +22,8 @@ const Index = () => {
     });
   }, [controls]);
 
-  // Reduce background intensity to improve performance
-  const backgroundIntensity = isMobile ? "light" : "medium";
+  // Always use light background intensity to improve performance and visibility
+  const backgroundIntensity = "light";
 
   return (
     <EnhancedBackground intensity={backgroundIntensity}>
@@ -43,15 +43,15 @@ const Index = () => {
             <VideoCarousel />
           </section>
           
-          <section id="features" className="high-contrast-section rounded-xl sm:rounded-3xl my-8 sm:my-12">
+          <section id="features" className="high-contrast-section rounded-xl sm:rounded-3xl my-8 sm:my-12 z-30 relative">
             <FeatureSection />
           </section>
           
-          <section id="stats">
+          <section id="stats" className="z-30 relative">
             <StatsSection />
           </section>
           
-          <section id="testimonials" className="py-8 sm:py-12">
+          <section id="testimonials" className="py-8 sm:py-12 z-30 relative">
             <TestimonialCarousel />
           </section>
         </div>

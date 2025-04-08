@@ -21,9 +21,9 @@ const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   const [mounted, setMounted] = useState(false);
   const isMobile = useIsMobile();
   
-  // Adjust intensity for mobile devices to improve performance
-  const adjustedIntensity = isMobile ? (intensity === 'extreme' ? 'medium' : 'light') : 
-                          (intensity === 'extreme' ? 'heavy' : intensity);
+  // Always reduce intensity for better performance and visibility
+  const adjustedIntensity = isMobile ? 'light' : 
+                          (intensity === 'extreme' || intensity === 'heavy') ? 'medium' : 'light';
   
   // Fix hydration issues
   useEffect(() => {
@@ -37,20 +37,20 @@ const EnhancedBackground: React.FC<EnhancedBackgroundProps> = ({
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden">
       {/* Main animated background with reduced opacity */}
-      <div className="fixed inset-0 z-0 opacity-40">
+      <div className="fixed inset-0 z-0 opacity-30">
         <AnimatedBackground intensity={adjustedIntensity} />
       </div>
       
       {/* Fixed position background effects with reduced opacity */}
-      <div className="fixed inset-0 z-0 opacity-50">
+      <div className="fixed inset-0 z-0 opacity-30">
         <BackgroundEffects isDarkMode={isDarkMode} intensity={adjustedIntensity} />
       </div>
       
       {/* Semi-transparent overlay to increase contrast for content */}
-      <div className={`fixed inset-0 z-1 ${isDarkMode ? 'bg-black/20' : 'bg-white/40'}`}></div>
+      <div className={`fixed inset-0 z-1 ${isDarkMode ? 'bg-black/30' : 'bg-white/50'}`}></div>
       
       {/* Content - ensuring it's clearly above background with higher z-index */}
-      <div className="relative z-20 w-full min-h-screen">
+      <div className="relative z-30 w-full min-h-screen">
         {children}
       </div>
     </div>
