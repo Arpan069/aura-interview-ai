@@ -556,10 +556,12 @@ const CandidateDashboard = () => {
                   </div>
                   
                   <div className="space-y-4">
-                    <Button className="w-full bg-primary hover:bg-primary/90">
-                      <PlayCircle className="mr-2 h-4 w-4" />
-                      Start Interview
-                    </Button>
+                    <Link to="/candidate/interview">
+                      <Button className="w-full bg-primary hover:bg-primary/90">
+                        <PlayCircle className="mr-2 h-4 w-4" />
+                        Start Interview
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

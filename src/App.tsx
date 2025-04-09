@@ -17,6 +17,7 @@ import CandidateRegister from "./pages/candidate/Register";
 import CandidateVerifyOTP from "./pages/candidate/VerifyOTP";
 import CandidateDashboard from "./pages/candidate/Dashboard";
 import CandidateProfile from "./pages/candidate/Profile";
+import CandidateInterview from "./pages/candidate/Interview";
 
 // Employer pages
 import EmployerLogin from "./pages/employer/Login";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/candidate/verify-otp" element={<CandidateVerifyOTP />} />
             <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
             <Route path="/candidate/profile" element={<CandidateProfile />} />
+            <Route path="/candidate/interview" element={<CandidateInterview />} />
             
             {/* Employer routes */}
             <Route path="/employer/login" element={<EmployerLogin />} />
