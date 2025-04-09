@@ -1,7 +1,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import BackgroundWrapper from "@/components/home/BackgroundWrapper";
 import InterviewHeader from "@/components/interview/InterviewHeader";
 import InterviewAvatar from "@/components/interview/InterviewAvatar";
@@ -10,6 +9,7 @@ import VideoFeed from "@/components/interview/VideoFeed";
 import QuestionCard from "@/components/interview/QuestionCard";
 import { useInterviewMedia } from "@/hooks/useInterviewMedia";
 import { useInterviewLogic } from "@/hooks/useInterviewLogic";
+import { Card, CardContent } from "@/components/ui/card";
 
 const InterviewPage = () => {
   const { 
@@ -34,10 +34,10 @@ const InterviewPage = () => {
 
   return (
     <BackgroundWrapper>
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col min-h-screen">
         <InterviewHeader onEndInterview={endInterview} />
         
-        <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto">
+        <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">
           {/* Left side - AI Avatar */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
