@@ -33,7 +33,7 @@ const InterviewPage = () => {
   } = useInterviewLogic(isSystemAudioOn);
 
   return (
-    <BackgroundWrapper>
+    {//<BackgroundWrapper>}
       <div className="flex flex-col min-h-screen">
         <InterviewHeader onEndInterview={endInterview} />
         
@@ -85,7 +85,7 @@ const InterviewPage = () => {
           </motion.div>
         </main>
       </div>
-    </BackgroundWrapper>
+        {//</BackgroundWrapper>}
   );
 };
 
