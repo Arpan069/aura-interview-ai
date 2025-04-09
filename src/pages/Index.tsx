@@ -21,7 +21,7 @@ const Index = () => {
       
       <main className="flex-grow flex flex-col relative z-10 px-4 py-12">
         <div className="container mx-auto">
-          <HeroSection scrollToTestimonials={scrollToTestimonials} />
+          <HeroSection />
         </div>
         
         {/* Testimonial Section */}

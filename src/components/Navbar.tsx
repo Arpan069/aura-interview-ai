@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React from "react";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,51 +9,25 @@ import NavbarLogo from "./navbar/NavbarLogo";
 import DesktopNav from "./navbar/DesktopNav";
 import MobileNav from "./navbar/MobileNav";
 import AuthButtons from "./navbar/AuthButtons";
-import { NavItem } from "@/types/navbar";
+import { useNavbarState } from "@/hooks/useNavbarState";
+import { getNavItems } from "@/data/navItems";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
+  const {
+    isOpen,
+    setIsOpen,
+    scrolled,
+    closeMenu,
+    loginLink,
+    dashboardLink,
+    isOnLoginPage,
+    isOnDashboardPage,
+    location
+  } = useNavbarState();
+  
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const closeMenu = () => setIsOpen(false);
-
-  // Check if we're on a candidate or employer page
-  const isCandidate = location.pathname.includes("/candidate");
-  const isEmployer = location.pathname.includes("/employer");
-  
-  // Determine the appropriate login/dashboard links
-  const loginLink = isEmployer ? "/employer/login" : "/candidate/login";
-  const dashboardLink = isEmployer ? "/employer/dashboard" : "/candidate/dashboard";
-  
-  // Check if user is on login or dashboard page
-  const isOnLoginPage = location.pathname.includes("/login") || location.pathname.includes("/register");
-  const isOnDashboardPage = location.pathname.includes("/dashboard");
-
-  // Main navigation items
-  const navItems: NavItem[] = [
-    { label: "Home", href: "/" },
-    { label: "Features", href: "/#features" },
-    { label: "About", href: "/about" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Contact", href: "/contact" },
-    { label: "Testimonials", href: "/#testimonials" },
-  ];
+  const navItems = getNavItems();
 
   return (
     <motion.header
