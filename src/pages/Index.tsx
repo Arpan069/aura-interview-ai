@@ -3,7 +3,6 @@ import React, { useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
-import VideoCarousel from "@/components/VideoCarousel";
 import HeroSection from "@/components/home/HeroSection";
 import BackgroundWrapper from "@/components/home/BackgroundWrapper";
 
@@ -23,11 +22,6 @@ const Index = () => {
       <main className="flex-grow flex flex-col relative z-10 px-4 py-12">
         <div className="container mx-auto">
           <HeroSection scrollToTestimonials={scrollToTestimonials} />
-        </div>
-
-        {/* Video Carousel Section */}
-        <div className="container mx-auto mt-16">
-          <VideoCarousel />
         </div>
         
         {/* Testimonial Section */}

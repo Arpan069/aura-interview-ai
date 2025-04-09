@@ -31,11 +31,18 @@ const AuthButtons = ({
   }
 
   return (
-    <Link to={loginLink}>
-      <Button variant="outline" size="sm">
-        Login
-      </Button>
-    </Link>
+    <div className="flex items-center gap-2">
+      <Link to="/candidate/login">
+        <Button variant="outline" size="sm">
+          I am a Candidate
+        </Button>
+      </Link>
+      <Link to="/employer/login">
+        <Button variant="default" size="sm">
+          I want to Hire
+        </Button>
+      </Link>
+    </div>
   );
 };
 

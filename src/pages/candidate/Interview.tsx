@@ -234,7 +234,7 @@ const InterviewPage = () => {
       <div className="min-h-screen flex flex-col">
         <InterviewHeader onEndInterview={endInterview} />
         
-        <main className="flex-grow flex flex-col md:flex-row gap-4 p-4">
+        <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto">
           {/* Left side - AI Avatar */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -242,7 +242,7 @@ const InterviewPage = () => {
             transition={{ duration: 0.5 }}
             className="w-full md:w-1/2 flex flex-col gap-4"
           >
-            <Card className="flex-grow relative overflow-hidden glass-morphism border-primary/10">
+            <Card className="flex-1 relative overflow-hidden glass-morphism border-primary/10">
               <CardContent className="p-0 h-full flex flex-col justify-center items-center">
                 <InterviewAvatar 
                   isInterviewStarted={isInterviewStarted}

@@ -79,11 +79,18 @@ const MobileNav = ({
                     </Button>
                   </Link>
                 ) : (
-                  <Link to={loginLink} onClick={closeMenu}>
-                    <Button variant="outline" className="w-full mt-4">
-                      Login
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <Link to="/candidate/login" onClick={closeMenu}>
+                      <Button variant="outline" className="w-full">
+                        I am a Candidate
+                      </Button>
+                    </Link>
+                    <Link to="/employer/login" onClick={closeMenu}>
+                      <Button variant="default" className="w-full">
+                        I want to Hire
+                      </Button>
+                    </Link>
+                  </div>
                 )}
               </>
             )}
