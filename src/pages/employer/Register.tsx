@@ -5,9 +5,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FiUser, FiMail, FiLock, FiBriefcase, FiArrowRight, FiArrowLeft } from "react-icons/fi";
+import { 
+  FiUser, 
+  FiMail, 
+  FiLock, 
+  FiBriefcase, 
+  FiArrowRight, 
+  FiArrowLeft, 
+  FiGlobe, 
+  FiHash, 
+  FiInfo
+} from "react-icons/fi";
 import { ModeToggle } from "@/components/ModeToggle";
 import EnhancedBackground from "@/components/EnhancedBackground";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from "@/components/ui/select";
 
 const EmployerRegister = () => {
   const navigate = useNavigate();
@@ -16,6 +33,10 @@ const EmployerRegister = () => {
     name: "",
     company: "",
     email: "",
+    companySize: "",
+    industry: "",
+    hiringGoals: "",
+    hearAboutUs: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false
@@ -42,6 +63,63 @@ const EmployerRegister = () => {
       placeholder: "Enter your business email",
       icon: <FiMail className="text-gray-400" />,
       type: "email",
+    },
+    {
+      title: "How big is your company?",
+      field: "companySize",
+      placeholder: "Select company size",
+      icon: <FiHash className="text-gray-400" />,
+      type: "select",
+      options: [
+        { value: "1-10", label: "1-10 employees" },
+        { value: "11-50", label: "11-50 employees" },
+        { value: "51-200", label: "51-200 employees" },
+        { value: "201-500", label: "201-500 employees" },
+        { value: "501+", label: "501+ employees" }
+      ]
+    },
+    {
+      title: "What industry are you in?",
+      field: "industry",
+      placeholder: "Select your industry",
+      icon: <FiGlobe className="text-gray-400" />,
+      type: "select",
+      options: [
+        { value: "technology", label: "Technology & Software" },
+        { value: "finance", label: "Finance & Banking" },
+        { value: "healthcare", label: "Healthcare & Medicine" },
+        { value: "education", label: "Education" },
+        { value: "retail", label: "Retail & E-commerce" },
+        { value: "manufacturing", label: "Manufacturing" },
+        { value: "other", label: "Other" }
+      ]
+    },
+    {
+      title: "What are your hiring goals?",
+      field: "hiringGoals",
+      placeholder: "Select your primary goal",
+      icon: <FiInfo className="text-gray-400" />,
+      type: "select",
+      options: [
+        { value: "technical", label: "Hire technical candidates" },
+        { value: "nontechnical", label: "Hire non-technical candidates" },
+        { value: "both", label: "Hire both technical and non-technical candidates" },
+        { value: "improve", label: "Improve hiring process efficiency" }
+      ]
+    },
+    {
+      title: "How did you hear about us?",
+      field: "hearAboutUs",
+      placeholder: "Select an option",
+      icon: <FiInfo className="text-gray-400" />,
+      type: "select",
+      options: [
+        { value: "search", label: "Search engine" },
+        { value: "social", label: "Social media" },
+        { value: "word", label: "Word of mouth" },
+        { value: "event", label: "Event or conference" },
+        { value: "other", label: "Other" }
+      ]
     },
     {
       title: "Create a secure password",
@@ -102,6 +180,44 @@ const EmployerRegister = () => {
       return value.length > 0;
     }
     return true;
+  };
+
+  const renderInput = (step: any) => {
+    if (step.type === "select") {
+      return (
+        <Select 
+          onValueChange={(value) => handleInputChange(step.field, value)}
+          value={formData[step.field as keyof typeof formData] as string}
+        >
+          <SelectTrigger className="pl-10">
+            <SelectValue placeholder={step.placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {step.options.map((option: any) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    } else {
+      return (
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            {step.icon}
+          </div>
+          <Input 
+            type={step.type}
+            placeholder={step.placeholder}
+            className="pl-10"
+            value={formData[step.field as keyof typeof formData] as string}
+            onChange={(e) => handleInputChange(step.field, e.target.value)}
+            autoFocus
+          />
+        </div>
+      );
+    }
   };
 
   return (
@@ -168,19 +284,7 @@ const EmployerRegister = () => {
                         className="space-y-6"
                       >
                         <div className="space-y-2">
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                              {steps[currentStep].icon}
-                            </div>
-                            <Input 
-                              type={steps[currentStep].type}
-                              placeholder={steps[currentStep].placeholder}
-                              className="pl-10"
-                              value={formData[steps[currentStep].field as keyof typeof formData] as string}
-                              onChange={(e) => handleInputChange(steps[currentStep].field, e.target.value)}
-                              autoFocus
-                            />
-                          </div>
+                          {renderInput(steps[currentStep])}
                         </div>
                         
                         <div className="flex justify-end">
@@ -226,6 +330,14 @@ const EmployerRegister = () => {
                             <div className="col-span-2">
                               <p className="text-sm font-medium">Email</p>
                               <p className="text-sm">{formData.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Company Size</p>
+                              <p className="text-sm">{formData.companySize}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Industry</p>
+                              <p className="text-sm">{formData.industry}</p>
                             </div>
                           </div>
                         </div>

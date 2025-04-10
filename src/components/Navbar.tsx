@@ -1,7 +1,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Menu } from "lucide-react";
+import { Menu, LogOut, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -12,6 +12,13 @@ import AuthButtons from "./navbar/AuthButtons";
 import { useNavbarState } from "@/hooks/useNavbarState";
 import { getNavItems } from "@/data/navItems";
 import { Link } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const {
@@ -36,6 +43,10 @@ const Navbar = () => {
     : location.pathname.includes("/candidate")
     ? "/candidate/profile"
     : "";
+
+  // Check if on employer or candidate dashboard
+  const isEmployerDashboard = location.pathname.includes("/employer/dashboard");
+  const isCandidateDashboard = location.pathname.includes("/candidate/dashboard");
 
   return (
     <motion.header
@@ -71,13 +82,35 @@ const Navbar = () => {
             
             {/* If on dashboard and profile path exists, show profile link */}
             {isOnDashboardPage && profilePath && (
-              <Link to={profilePath} className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-full bg-brand-primary/20 flex items-center justify-center">
-                  <span className="text-xs font-medium">
-                    {location.pathname.includes("/employer") ? "EM" : "CD"}
-                  </span>
-                </div>
-              </Link>
+              <>
+                {isEmployerDashboard ? (
+                  <Link to={profilePath} className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-brand-primary/20 flex items-center justify-center">
+                      <span className="text-xs font-medium">EM</span>
+                    </div>
+                  </Link>
+                ) : isCandidateDashboard ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-brand-primary/30 transition-all">
+                        <AvatarFallback>CD</AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link to="/candidate/profile" className="cursor-pointer flex items-center">
+                          <UserCog className="mr-2 h-4 w-4" />
+                          <span>Edit Profile</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+              </>
             )}
             
             {/* Theme Toggle Button */}
