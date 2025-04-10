@@ -49,20 +49,17 @@ const ConfigureInterviewSection = () => {
 
   return (
     <Card className="glass-morphism">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5 text-primary" />
-          <CardTitle>Configure Interview</CardTitle>
-        </div>
-        <CollapsibleTrigger 
-          onClick={() => setOpen(!open)}
-          className="hover:bg-muted p-2 rounded-full"
-        >
-          {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </CollapsibleTrigger>
-      </CardHeader>
-      
-      <Collapsible open={open}>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" />
+            <CardTitle>Configure Interview</CardTitle>
+          </div>
+          <CollapsibleTrigger className="hover:bg-muted p-2 rounded-full">
+            {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </CollapsibleTrigger>
+        </CardHeader>
+        
         <CollapsibleContent>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
