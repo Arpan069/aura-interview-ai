@@ -1,20 +1,107 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FiUser, FiMail, FiLock, FiBriefcase } from "react-icons/fi";
+import { FiUser, FiMail, FiLock, FiBriefcase, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { ModeToggle } from "@/components/ModeToggle";
 import EnhancedBackground from "@/components/EnhancedBackground";
 
 const EmployerRegister = () => {
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    name: "",
+    company: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false
+  });
+
+  const steps = [
+    {
+      title: "What's your name?",
+      field: "name",
+      placeholder: "Enter your full name",
+      icon: <FiUser className="text-gray-400" />,
+      type: "text",
+    },
+    {
+      title: "What company do you represent?",
+      field: "company",
+      placeholder: "Enter your company name",
+      icon: <FiBriefcase className="text-gray-400" />,
+      type: "text",
+    },
+    {
+      title: "What's your work email?",
+      field: "email",
+      placeholder: "Enter your business email",
+      icon: <FiMail className="text-gray-400" />,
+      type: "email",
+    },
+    {
+      title: "Create a secure password",
+      field: "password",
+      placeholder: "Create a password",
+      icon: <FiLock className="text-gray-400" />,
+      type: "password",
+    },
+    {
+      title: "Confirm your password",
+      field: "confirmPassword",
+      placeholder: "Confirm your password",
+      icon: <FiLock className="text-gray-400" />,
+      type: "password",
+    }
+  ];
+
+  const handleNextStep = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData({
+      ...formData,
+      [field]: value
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     navigate('/employer/dashboard');
+  };
+
+  const isCurrentFieldValid = () => {
+    if (currentStep >= steps.length) return true;
+    
+    const field = steps[currentStep].field;
+    const value = formData[field as keyof typeof formData];
+    
+    if (typeof value === 'string') {
+      if (field === 'email') {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      }
+      if (field === 'password') {
+        return value.length >= 6;
+      }
+      if (field === 'confirmPassword') {
+        return value === formData.password;
+      }
+      return value.length > 0;
+    }
+    return true;
   };
 
   return (
@@ -41,120 +128,161 @@ const EmployerRegister = () => {
               className="w-full max-w-md"
             >
               <div className="glass-card rounded-xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <h1 className="text-2xl font-bold mb-2">Register as an Employer</h1>
-                  <p className="text-gray-600 dark:text-gray-400">Create your employer account to find the best candidates</p>
-                </div>
-                
-                <form className="space-y-6" onSubmit={handleSubmit}>
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiUser className="text-gray-400" />
+                {currentStep < steps.length ? (
+                  <>
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center">
+                            {currentStep > 0 && (
+                              <button 
+                                onClick={handlePrevStep}
+                                className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              >
+                                <FiArrowLeft className="h-5 w-5" />
+                              </button>
+                            )}
+                            <h2 className="text-2xl font-bold">{steps[currentStep].title}</h2>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {currentStep + 1}/{steps.length + 1}
+                        </div>
                       </div>
-                      <Input 
-                        id="name"
-                        type="text" 
-                        placeholder="Enter your full name"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="company" className="text-sm font-medium">Company Name</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiBriefcase className="text-gray-400" />
+                      
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 h-1 rounded-full">
+                        <div 
+                          className="bg-brand-purple h-1 rounded-full transition-all duration-300"
+                          style={{ width: `${((currentStep + 1) / (steps.length + 1)) * 100}%` }}
+                        />
                       </div>
-                      <Input 
-                        id="company"
-                        type="text" 
-                        placeholder="Enter your company name"
-                        className="pl-10"
-                        required
-                      />
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium">Email Address</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiMail className="text-gray-400" />
-                      </div>
-                      <Input 
-                        id="email"
-                        type="email" 
-                        placeholder="Enter your business email"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="password" className="text-sm font-medium">Password</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiLock className="text-gray-400" />
-                      </div>
-                      <Input 
-                        id="password"
-                        type="password" 
-                        placeholder="Create a password"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="confirm-password" className="text-sm font-medium">Confirm Password</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiLock className="text-gray-400" />
-                      </div>
-                      <Input 
-                        id="confirm-password"
-                        type="password" 
-                        placeholder="Confirm your password"
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-2">
-                    <Checkbox id="terms" className="mt-1" required />
-                    <div>
-                      <label
-                        htmlFor="terms"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentStep}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
                       >
-                        I agree to the terms and conditions
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        By creating an account, you agree to our{" "}
-                        <Link to="/terms" className="text-brand-blue hover:underline">Terms of Service</Link> and{" "}
-                        <Link to="/privacy" className="text-brand-blue hover:underline">Privacy Policy</Link>.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <Button type="submit" className="w-full bg-brand-purple hover:bg-indigo-600">
-                    Create Employer Account
-                  </Button>
-                </form>
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                              {steps[currentStep].icon}
+                            </div>
+                            <Input 
+                              type={steps[currentStep].type}
+                              placeholder={steps[currentStep].placeholder}
+                              className="pl-10"
+                              value={formData[steps[currentStep].field as keyof typeof formData] as string}
+                              onChange={(e) => handleInputChange(steps[currentStep].field, e.target.value)}
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-end">
+                          <Button 
+                            onClick={handleNextStep}
+                            disabled={!isCurrentFieldValid()}
+                            className="flex items-center gap-2"
+                          >
+                            Next <FiArrowRight />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
+                  </>
+                ) : (
+                  <AnimatePresence>
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-6"
+                    >
+                      <div className="text-center mb-6">
+                        <h2 className="text-2xl font-bold">Final Step</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mt-2">
+                          Review and complete your registration
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Your Information</h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-sm font-medium">Name</p>
+                              <p className="text-sm">{formData.name}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Company</p>
+                              <p className="text-sm">{formData.company}</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-sm font-medium">Email</p>
+                              <p className="text-sm">{formData.email}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start space-x-2">
+                        <Checkbox 
+                          id="terms" 
+                          checked={formData.agreeToTerms}
+                          onCheckedChange={(checked) => handleInputChange('agreeToTerms', !!checked)}
+                          className="mt-1" 
+                          required 
+                        />
+                        <div>
+                          <label
+                            htmlFor="terms"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            I agree to the terms and conditions
+                          </label>
+                          <p className="text-xs text-gray-500 mt-1">
+                            By creating an account, you agree to our{" "}
+                            <Link to="/terms" className="text-brand-blue hover:underline">Terms of Service</Link> and{" "}
+                            <Link to="/privacy" className="text-brand-blue hover:underline">Privacy Policy</Link>.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <Button
+                          variant="outline"
+                          onClick={handlePrevStep}
+                          className="flex items-center gap-2"
+                        >
+                          <FiArrowLeft /> Back
+                        </Button>
+                        
+                        <Button 
+                          onClick={handleSubmit}
+                          disabled={!formData.agreeToTerms}
+                          className="bg-brand-purple hover:bg-indigo-600"
+                        >
+                          Create Employer Account
+                        </Button>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                )}
                 
-                <p className="text-center mt-8 text-sm text-gray-600 dark:text-gray-400">
-                  Already have an account?{" "}
-                  <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">
-                    Login instead
-                  </Link>
-                </p>
+                <div className="mt-8">
+                  <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                    Already have an account?{" "}
+                    <Link to="/employer/login" className="text-brand-blue font-medium hover:underline">
+                      Login instead
+                    </Link>
+                  </p>
+                </div>
               </div>
             </motion.div>
             

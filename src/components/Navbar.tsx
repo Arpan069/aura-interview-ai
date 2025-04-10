@@ -11,6 +11,7 @@ import MobileNav from "./navbar/MobileNav";
 import AuthButtons from "./navbar/AuthButtons";
 import { useNavbarState } from "@/hooks/useNavbarState";
 import { getNavItems } from "@/data/navItems";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const {
@@ -28,6 +29,13 @@ const Navbar = () => {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   const navItems = getNavItems();
+  
+  // Determine profile path based on route
+  const profilePath = location.pathname.includes("/employer") 
+    ? "/employer/profile" 
+    : location.pathname.includes("/candidate")
+    ? "/candidate/profile"
+    : "";
 
   return (
     <motion.header
@@ -59,6 +67,17 @@ const Navbar = () => {
                 loginLink={loginLink}
                 dashboardLink={dashboardLink}
               />
+            )}
+            
+            {/* If on dashboard and profile path exists, show profile link */}
+            {isOnDashboardPage && profilePath && (
+              <Link to={profilePath} className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-brand-primary/20 flex items-center justify-center">
+                  <span className="text-xs font-medium">
+                    {location.pathname.includes("/employer") ? "EM" : "CD"}
+                  </span>
+                </div>
+              </Link>
             )}
             
             {/* Theme Toggle Button */}

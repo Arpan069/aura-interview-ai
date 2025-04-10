@@ -10,6 +10,7 @@ import { useInterviewMedia } from "@/hooks/useInterviewMedia";
 import { useInterviewLogic } from "@/hooks/useInterviewLogic";
 import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const InterviewPage = () => {
   const { 
@@ -35,6 +36,10 @@ const InterviewPage = () => {
   return (
     <EnhancedBackground intensity="light" variant="default">
       <div className="flex flex-col min-h-screen relative z-10">
+        <div className="absolute top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
+        
         <InterviewHeader onEndInterview={endInterview} />
         
         <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">

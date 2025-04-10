@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, LogOut, Settings, Users } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ConfigureInterviewSection from "@/components/employer/ConfigureInterviewSection";
 import InterviewsListSection from "@/components/employer/InterviewsListSection";
 import InterviewDetailSection from "@/components/employer/InterviewDetailSection";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const EmployerDashboard = () => {
   const { theme } = useTheme();
@@ -46,23 +47,18 @@ const EmployerDashboard = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="icon" className="rounded-full">
-                <Bell size={18} />
-              </Button>
+              <ThemeToggle />
               
-              <Button variant="outline" size="icon" className="rounded-full">
-                <Settings size={18} />
-              </Button>
-              
-              <div className="flex items-center gap-2">
-                <Avatar>
+              <Link to="/employer/profile">
+                <Avatar className="cursor-pointer hover:ring-2 hover:ring-brand-primary/30 transition-all">
                   <AvatarImage src="https://github.com/shadcn.png" />
                   <AvatarFallback>EM</AvatarFallback>
                 </Avatar>
-                <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium">Employer</p>
-                  <p className="text-xs text-muted-foreground">Acme Inc.</p>
-                </div>
+              </Link>
+              
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-medium">Employer</p>
+                <p className="text-xs text-muted-foreground">Acme Inc.</p>
               </div>
               
               <Button 
