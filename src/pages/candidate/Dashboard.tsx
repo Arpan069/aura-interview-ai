@@ -187,14 +187,14 @@ const CandidateDashboard = () => {
                   Signed in as <span className="font-semibold ml-1">alex.johnson@example.com</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <User className="h-4 w-4 mr-2" /> Profile
+                  <User className="h-4 w-4 mr-2" />Edit Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
+                {/*<DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                   <Calendar className="h-4 w-4 mr-2" /> My Interviews
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                   <Video className="h-4 w-4 mr-2" /> Practice
-                </DropdownMenuItem>
+                </DropdownMenuItem>*/}
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500 hover:bg-red-500/10">
                   <LogOut className="h-4 w-4 mr-2" /> Logout
                 </DropdownMenuItem>
