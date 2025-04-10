@@ -33,8 +33,11 @@ const InterviewPage = () => {
   } = useInterviewLogic(isSystemAudioOn);
 
   return (
-    <BackgroundWrapper>
-      <div className="flex flex-col min-h-screen">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/95 relative">
+      {/* Simple background gradient overlay with reduced intensity */}
+      <div className="fixed inset-0 bg-gradient-to-br from-brand-primary/5 via-transparent to-background/60"></div>
+      
+      <div className="flex flex-col min-h-screen relative z-10">
         <InterviewHeader onEndInterview={endInterview} />
         
         <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">
@@ -85,7 +88,7 @@ const InterviewPage = () => {
           </motion.div>
         </main>
       </div>
-        </BackgroundWrapper>
+    </div>
   );
 };
 
