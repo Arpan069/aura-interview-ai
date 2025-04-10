@@ -1,7 +1,6 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import BackgroundWrapper from "@/components/home/BackgroundWrapper";
 import InterviewHeader from "@/components/interview/InterviewHeader";
 import InterviewAvatar from "@/components/interview/InterviewAvatar";
 import TranscriptSection from "@/components/interview/TranscriptSection";
@@ -10,6 +9,7 @@ import QuestionCard from "@/components/interview/QuestionCard";
 import { useInterviewMedia } from "@/hooks/useInterviewMedia";
 import { useInterviewLogic } from "@/hooks/useInterviewLogic";
 import { Card, CardContent } from "@/components/ui/card";
+import EnhancedBackground from "@/components/EnhancedBackground";
 
 const InterviewPage = () => {
   const { 
@@ -33,10 +33,7 @@ const InterviewPage = () => {
   } = useInterviewLogic(isSystemAudioOn);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/95 relative">
-      {/* Simple background gradient overlay with reduced intensity */}
-      <div className="fixed inset-0 bg-gradient-to-br from-brand-primary/5 via-transparent to-background/60"></div>
-      
+    <EnhancedBackground intensity="light" variant="default">
       <div className="flex flex-col min-h-screen relative z-10">
         <InterviewHeader onEndInterview={endInterview} />
         
@@ -88,7 +85,7 @@ const InterviewPage = () => {
           </motion.div>
         </main>
       </div>
-    </div>
+    </EnhancedBackground>
   );
 };
 
