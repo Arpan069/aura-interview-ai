@@ -187,7 +187,7 @@ const CandidateDashboard = () => {
                   Signed in as <span className="font-semibold ml-1">alex.johnson@example.com</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <User className="h-4 w-4 mr-2" />Edit Profile
+                  <Link to="/candidate/profile"><User className="h-4 w-4 mr-2" />Edit Profile </Link>   {/*Delete the link tags in case of error*/}
                   {/*</DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                   <Calendar className="h-4 w-4 mr-2" /> My Interviews
