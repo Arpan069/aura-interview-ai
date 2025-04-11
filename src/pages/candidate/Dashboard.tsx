@@ -187,7 +187,7 @@ const CandidateDashboard = () => {
                   Signed in as <span className="font-semibold ml-1">alex.johnson@example.com</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
-                  <User className="h-4 w-4 mr-2" />Profile
+                  <User className="h-4 w-4 mr-2" /> Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
                   <Calendar className="h-4 w-4 mr-2" /> My Interviews
