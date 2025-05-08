@@ -26,3 +26,11 @@ export const speakText = async (
     // Silently fail - interviewer will just not speak
   }
 };
+
+/**
+ * Check if browser supports speech recognition
+ */
+export const checkSpeechRecognitionSupport = (): boolean => {
+  return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+};
+

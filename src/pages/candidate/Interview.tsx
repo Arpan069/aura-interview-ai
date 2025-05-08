@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import InterviewHeader from "@/components/interview/InterviewHeader";
 import InterviewAvatar from "@/components/interview/InterviewAvatar";
@@ -7,7 +7,7 @@ import VideoFeed from "@/components/interview/VideoFeed";
 import QuestionCard from "@/components/interview/QuestionCard";
 import InterviewTabs from "@/components/interview/InterviewTabs";
 import { useInterviewMedia } from "@/hooks/useInterviewMedia";
-import { useInterviewLogic } from "@/hooks/useInterviewLogic";
+import { useInterview } from "@/hooks/useInterview";
 import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -29,7 +29,6 @@ const InterviewPage = () => {
     toggleAudio, 
     toggleSystemAudio,
     mediaStream,
-    hasPermissions,
     requestMediaPermissions
   } = useInterviewMedia();
   
@@ -39,53 +38,12 @@ const InterviewPage = () => {
     isProcessingAI,
     currentQuestion, 
     transcript,
-    startInterview: startInterviewLogic, 
+    startInterview,
     endInterview,
     currentCodingQuestion,
-    transcriptionState
-  } = useInterviewLogic(isSystemAudioOn);
-
-  // Display transcription status on component mount
-  useEffect(() => {
-    if (mediaStream && hasPermissions) {
-      const audioTracks = mediaStream.getAudioTracks();
-      console.log("Audio tracks:", audioTracks);
-      
-      if (audioTracks.length > 0) {
-        audioTracks.forEach((track, index) => {
-          console.log(`Audio track ${index}:`, {
-            enabled: track.enabled,
-            muted: track.muted,
-            readyState: track.readyState,
-            label: track.label,
-            id: track.id
-          });
-        });
-      } else {
-        console.warn("No audio tracks available");
-      }
-    }
-  }, [mediaStream, hasPermissions]);
-
-  // Monitor transcription state for debugging
-  useEffect(() => {
-    if (isRecording && transcriptionState) {
-      const intervalId = setInterval(() => {
-        if (transcriptionState.lastTranscriptionTime) {
-          const timeSince = Date.now() - transcriptionState.lastTranscriptionTime;
-          // Log if it's been more than 10 seconds since the last transcription
-          if (timeSince > 10000) {
-            console.log("Transcription may be stalled:", {
-              timeSinceLastTranscription: `${Math.round(timeSince / 1000)}s`,
-              errors: transcriptionState.transcriptionErrors
-            });
-          }
-        }
-      }, 5000);
-      
-      return () => clearInterval(intervalId);
-    }
-  }, [isRecording, transcriptionState]);
+    browserSupportsSpeechRecognition,
+    isListening
+  } = useInterview(isSystemAudioOn);
 
   /**
    * Start interview with recording when user clicks start button
@@ -118,25 +76,35 @@ const InterviewPage = () => {
       return;
     }
     
+    // Check if browser supports speech recognition
+    if (!browserSupportsSpeechRecognition) {
+      toast({
+        title: "Browser not supported",
+        description: "Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Check if audio is enabled
     if (!isAudioOn) {
       toast({
         title: "Microphone is off",
         description: "Please enable your microphone for the interview",
-        variant: "default" // Changed from "warning" to "default" to fix the type error
+        variant: "default"
       });
       toggleAudio();
       return;
     }
     
     // Start interview logic with media stream for recording
-    await startInterviewLogic(mediaStream);
+    await startInterview(mediaStream);
   };
 
   /**
    * Warn before unload if interview is in progress
    */
-  useEffect(() => {
+  React.useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isInterviewStarted && !confirm("Are you sure you want to leave? Your interview progress will be lost.")) {
         e.preventDefault();
@@ -187,7 +155,7 @@ const InterviewPage = () => {
               isInterviewStarted={isInterviewStarted}
               currentQuestion={currentQuestion}
               startInterview={handleStartInterview}
-              isLoading={isLoading || !hasPermissions}
+              isLoading={isLoading}
             />
           </motion.div>
           
@@ -207,7 +175,7 @@ const InterviewPage = () => {
               toggleAudio={toggleAudio}
               toggleSystemAudio={toggleSystemAudio}
               isRecording={isRecording}
-              hasPermissions={hasPermissions}
+              isListening={isListening}
               requestMediaPermissions={requestMediaPermissions}
             />
             
@@ -223,4 +191,3 @@ const InterviewPage = () => {
 };
 
 export default InterviewPage;
-
