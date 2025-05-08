@@ -51,74 +51,33 @@ const InterviewPage = () => {
    */
   const handleStartInterview = async () => {
     if (!mediaStream) {
-      toast({
-        title: "Camera/Microphone required",
-        description: "Please enable your camera and microphone to start the interview",
-        variant: "destructive"
-      });
-
-      // Try requesting permissions again
+      // Try requesting permissions silently
       if (requestMediaPermissions) {
         await requestMediaPermissions();
+      }
+      
+      // If still no media stream, show a simpler message
+      if (!mediaStream) {
+        toast({
+          title: "Camera access needed",
+          description: "Please allow camera access to continue with the interview",
+        });
         return;
       }
-      return;
-    }
-    
-    // Verify audio is available before starting
-    const audioTracks = mediaStream.getAudioTracks();
-    if (audioTracks.length === 0) {
-      toast({
-        title: "Microphone required",
-        description: "No microphone detected. Voice transcription will not work without a microphone.",
-        variant: "destructive"
-      });
-      return;
     }
     
     // Check if browser supports speech recognition
     if (!browserSupportsSpeechRecognition) {
       toast({
-        title: "Browser not supported",
-        description: "Your browser does not support speech recognition. Please use Chrome, Edge, or Safari.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Check if audio is enabled
-    if (!isAudioOn) {
-      toast({
-        title: "Microphone is off",
-        description: "Please enable your microphone for the interview",
+        title: "Browser compatibility",
+        description: "For best experience, use Chrome, Edge, or Safari for speech recognition",
         variant: "default"
       });
-      toggleAudio();
-      return;
     }
     
     // Start interview logic with media stream for recording
     await startInterview(mediaStream);
   };
-
-  /**
-   * Warn before unload if interview is in progress
-   */
-  React.useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isInterviewStarted && !confirm("Are you sure you want to leave? Your interview progress will be lost.")) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isInterviewStarted]);
 
   return (
     <EnhancedBackground intensity="light" variant="default">
@@ -176,7 +135,6 @@ const InterviewPage = () => {
               toggleSystemAudio={toggleSystemAudio}
               isRecording={isRecording}
               isListening={isListening}
-              requestMediaPermissions={requestMediaPermissions}
             />
             
             <InterviewTabs 
