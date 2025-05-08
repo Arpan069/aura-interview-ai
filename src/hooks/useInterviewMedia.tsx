@@ -1,6 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 export const useInterviewMedia = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -8,35 +7,38 @@ export const useInterviewMedia = () => {
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [isSystemAudioOn, setIsSystemAudioOn] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  
+  // New state to expose media stream to other components
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
   // Initialize user media stream
   useEffect(() => {
     const initializeMedia = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: isVideoOn, 
-          audio: isAudioOn 
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: isVideoOn, 
+            audio: isAudioOn 
+          });
+          
+          mediaStreamRef.current = stream;
+          setMediaStream(stream); // Set the media stream state
+          
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } else {
+          console.error("getUserMedia is not supported in this browser");
         }
         
+        // Set loading to false after a small delay
         setTimeout(() => {
           setIsLoading(false);
-          toast({
-            title: "System check complete",
-            description: "Camera and microphone are working properly.",
-          });
-        }, 2000);
+        }, 1000); // Reduced from 2000ms to 1000ms for better UX
         
       } catch (error) {
         console.error("Error accessing media devices:", error);
-        toast({
-          title: "Media access error",
-          description: "Could not access camera or microphone. Please check your permissions.",
-          variant: "destructive",
-        });
         setIsLoading(false);
       }
     };
@@ -45,16 +47,17 @@ export const useInterviewMedia = () => {
     
     return () => {
       // Clean up media streams when component unmounts
-      const stream = videoRef.current?.srcObject as MediaStream;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+        mediaStreamRef.current = null;
+        setMediaStream(null);
       }
     };
   }, []);
 
-  // Toggle video
-  const toggleVideo = async () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
+  // Toggle video with memoized callback to prevent unnecessary re-renders
+  const toggleVideo = useCallback(async () => {
+    const stream = mediaStreamRef.current;
     
     if (stream) {
       const videoTracks = stream.getVideoTracks();
@@ -72,19 +75,15 @@ export const useInterviewMedia = () => {
           stream.addTrack(videoTrack);
           setIsVideoOn(true);
         } catch (error) {
-          toast({
-            title: "Camera error",
-            description: "Could not access camera.",
-            variant: "destructive",
-          });
+          console.error("Could not access camera.", error);
         }
       }
     }
-  };
+  }, [isVideoOn]);
 
-  // Toggle audio
-  const toggleAudio = async () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
+  // Toggle audio with memoized callback
+  const toggleAudio = useCallback(async () => {
+    const stream = mediaStreamRef.current;
     
     if (stream) {
       const audioTracks = stream.getAudioTracks();
@@ -102,20 +101,16 @@ export const useInterviewMedia = () => {
           stream.addTrack(audioTrack);
           setIsAudioOn(true);
         } catch (error) {
-          toast({
-            title: "Microphone error",
-            description: "Could not access microphone.",
-            variant: "destructive",
-          });
+          console.error("Could not access microphone.", error);
         }
       }
     }
-  };
+  }, [isAudioOn]);
 
-  // Toggle system audio (AI voice)
-  const toggleSystemAudio = () => {
-    setIsSystemAudioOn(!isSystemAudioOn);
-  };
+  // Toggle system audio with memoized callback
+  const toggleSystemAudio = useCallback(() => {
+    setIsSystemAudioOn(prev => !prev);
+  }, []);
 
   return {
     videoRef,
@@ -125,6 +120,7 @@ export const useInterviewMedia = () => {
     isLoading,
     toggleVideo,
     toggleAudio,
-    toggleSystemAudio
+    toggleSystemAudio,
+    mediaStream // New: Exposing media stream for recording
   };
 };

@@ -1,119 +1,195 @@
 
-import { useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { videoRecorder } from "@/utils/videoRecording";
+import { OpenAIService } from "@/services/OpenAIService";
 import { toast } from "@/hooks/use-toast";
+import { speakText } from "@/utils/speechUtils";
+import { useTranscript } from "@/hooks/useTranscript";
+import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
+import { useAIResponse } from "@/hooks/useAIResponse";
+import { useRealTimeTranscription } from "@/hooks/useRealTimeTranscription";
 
-interface Transcript {
-  speaker: string;
-  text: string;
-  timestamp: Date;
-}
+const openAIService = new OpenAIService();
 
+/**
+ * Custom hook for managing interview logic and state
+ * @param isSystemAudioOn - Whether system audio is enabled
+ */
 export const useInterviewLogic = (isSystemAudioOn: boolean) => {
+  // Navigation hook for redirecting after interview
   const navigate = useNavigate();
-  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState("");
-  const [transcript, setTranscript] = useState<Transcript[]>([]);
   
-  // Interview questions
-  const [questions] = useState([
-    "Tell me a little about yourself and your background.",
-    "What interests you about this position?",
-    "What are your greatest strengths that make you suitable for this role?",
-    "Can you describe a challenging situation you faced at work and how you handled it?",
-    "Where do you see yourself professionally in five years?",
-  ]);
+  // Core interview state
+  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-  // Start the interview
-  const startInterview = () => {
-    setIsInterviewStarted(true);
-    setCurrentQuestion(questions[0]);
-    
-    // Add initial AI question to transcript
-    addToTranscript("AI Interviewer", questions[0]);
-    
-    // Simulate AI speaking
-    speakText(questions[0]);
-  };
+  // References to keep track of transcription status
+  const transcriptionInProgress = useRef(false);
 
-  // End the interview
-  const endInterview = () => {
-    // Here you would normally send the transcript data to your backend
-    // for analysis and scoring
-    
-    toast({
-      title: "Interview complete",
-      description: "Thank you for participating in the interview.",
-    });
-    
-    navigate("/candidate/dashboard");
-  };
+  // Use custom hooks
+  const { transcript, addToTranscript } = useTranscript();
+  
+  const { 
+    currentQuestion, 
+    setCurrentQuestion, 
+    currentCodingQuestion, 
+    setCurrentCodingQuestion,
+    showCodingChallenge,
+    setShowCodingChallenge,
+    advanceToNextQuestion,
+    questions,
+    codingQuestions
+  } = useInterviewQuestions(isSystemAudioOn, addToTranscript);
+  
+  const { isProcessingAI, processWithOpenAI } = useAIResponse(
+    isSystemAudioOn, 
+    addToTranscript, 
+    advanceToNextQuestion
+  );
+  
+  const { handleRealTimeTranscription } = useRealTimeTranscription(
+    addToTranscript,
+    processWithOpenAI,
+    currentQuestion
+  );
 
-  // Add message to transcript
-  const addToTranscript = (speaker: string, text: string) => {
-    setTranscript(prev => [...prev, {
-      speaker,
-      text,
-      timestamp: new Date()
-    }]);
-  };
-
-  // Simulate AI speaking text
-  const speakText = (text: string) => {
-    if (!isSystemAudioOn) return;
-    
-    // Here you would normally integrate with a text-to-speech API
-    // For now, we'll just simulate the AI speaking with a timer
-    
-    toast({
-      title: "AI Speaking",
-      description: text.substring(0, 60) + (text.length > 60 ? "..." : ""),
-      duration: 3000,
-    });
-  };
-
-  // Simulate candidate's answer and progress to next question
-  const simulateAnswer = () => {
-    // In a real app, this would be triggered by speech recognition
-    // For demonstration, we'll use a button
-    
-    const currentIndex = questions.indexOf(currentQuestion);
-    
-    // Add simulated answer to transcript
-    addToTranscript("You", "This is a simulated answer from the candidate.");
-    
-    // Move to the next question if available
-    if (currentIndex < questions.length - 1) {
-      const nextQuestion = questions[currentIndex + 1];
-      setCurrentQuestion(nextQuestion);
+  /**
+   * Generate a complete transcript from the full recording
+   * @param audioOrVideoBlob The complete recording blob
+   */
+  const generateFullTranscript = useCallback(async (audioOrVideoBlob: Blob) => {
+    try {
+      transcriptionInProgress.current = true;
+      toast({
+        title: "Finalizing transcript",
+        description: "Processing complete interview...",
+      });
       
-      // Add next question to transcript
-      setTimeout(() => {
-        addToTranscript("AI Interviewer", nextQuestion);
-        speakText(nextQuestion);
-      }, 1000);
-    } else {
-      // End of interview
-      setTimeout(() => {
-        addToTranscript("AI Interviewer", "Thank you for your time. The interview is now complete.");
-        speakText("Thank you for your time. The interview is now complete.");
+      // Send the complete recording to OpenAI for transcription
+      const result = await openAIService.transcribe(audioOrVideoBlob, {
+        language: "en", // Default to English
+      });
+      
+      // Parse the result and update transcript with a final, complete version
+      if (result.text) {
+        // Add a final, complete transcription to the end of the transcript
+        addToTranscript("Complete Interview Transcript", result.text);
         
-        // Show end interview button
         toast({
-          title: "Interview complete",
-          description: "All questions have been answered.",
-          duration: 5000,
+          title: "Transcript finalized",
+          description: "Complete interview transcript has been created",
         });
-      }, 1000);
+      }
+    } catch (error) {
+      console.error("Final transcription error:", error);
+      toast({
+        title: "Final transcription incomplete",
+        description: "Could not generate complete transcript from recording",
+        variant: "destructive",
+      });
+    } finally {
+      transcriptionInProgress.current = false;
     }
-  };
+  }, [addToTranscript]);
+
+  /**
+   * Start the interview and recording
+   * @param stream Media stream to record from
+   */
+  const startInterview = useCallback(async (stream: MediaStream) => {
+    try {
+      // Set interview as started
+      setIsInterviewStarted(true);
+      // Set the first question
+      setCurrentQuestion(questions[0]);
+      
+      // Start recording with real-time transcription enabled
+      await videoRecorder.startRecording(stream, {
+        enableRealTimeTranscription: true,
+        transcriptionCallback: handleRealTimeTranscription
+      });
+      
+      // Update recording state
+      setIsRecording(true);
+      
+      // Add initial AI question to transcript
+      addToTranscript("AI Interviewer", questions[0]);
+      
+      // Set initial coding question but don't show it yet
+      setCurrentCodingQuestion(codingQuestions[0]);
+      
+      // Simulate AI speaking the question
+      speakText(questions[0], isSystemAudioOn);
+    } catch (error) {
+      console.error("Failed to start interview:", error);
+      toast({
+        title: "Start failed",
+        description: "Could not start interview recording",
+        variant: "destructive",
+      });
+    }
+  }, [questions, codingQuestions, handleRealTimeTranscription, addToTranscript, isSystemAudioOn]);
+
+  /**
+   * End the interview and save recording
+   */
+  const endInterview = useCallback(async () => {
+    try {
+      if (isRecording) {
+        // Stop recording and get the blob
+        const recordedBlob = await videoRecorder.stopRecording();
+        setIsRecording(false);
+        
+        // Save the recording and get the URL
+        const url = await videoRecorder.saveRecording(recordedBlob);
+        setVideoUrl(url);
+        
+        // Final transcription of the full recording for completeness
+        if (!transcriptionInProgress.current) {
+          generateFullTranscript(recordedBlob);
+        }
+        
+        toast({
+          title: "Interview completed",
+          description: "Recording saved successfully",
+        });
+      }
+      
+      // Navigate back to dashboard
+      navigate("/candidate/dashboard");
+    } catch (error) {
+      console.error("Error ending interview:", error);
+      toast({
+        title: "Error",
+        description: "Failed to end interview properly",
+        variant: "destructive",
+      });
+      navigate("/candidate/dashboard");
+    }
+  }, [isRecording, navigate, generateFullTranscript]);
+
+  // Clean up on component unmount
+  useEffect(() => {
+    return () => {
+      if (isRecording) {
+        // Attempt to stop recording if component unmounts during recording
+        videoRecorder.cleanup();
+      }
+    };
+  }, [isRecording]);
 
   return {
     isInterviewStarted,
+    isRecording,
     currentQuestion,
     transcript,
     startInterview,
     endInterview,
-    simulateAnswer
+    currentCodingQuestion,
+    showCodingChallenge,
+    videoUrl,
+    isProcessingAI
   };
 };
