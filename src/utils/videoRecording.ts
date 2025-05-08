@@ -1,5 +1,5 @@
 import { toast } from "@/hooks/use-toast";
-import OpenAIService from "@/services/OpenAIService";
+import { OpenAIService } from "@/services/OpenAIService";
 
 // Configuration for video recording
 // EDIT THIS SECTION TO CHANGE THE STORAGE LOCATION
@@ -11,7 +11,7 @@ const VIDEO_STORAGE_CONFIG = {
 };
 
 // Create a singleton instance of OpenAIService
-const openAIService = OpenAIService;
+const openAIService = new OpenAIService();
 
 interface RecordingOptions {
   fileName?: string;
