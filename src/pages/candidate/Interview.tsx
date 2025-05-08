@@ -12,8 +12,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 /**
  * Main Interview Page Component
@@ -47,10 +45,6 @@ const InterviewPage = () => {
     isListening
   } = useInterview(isSystemAudioOn);
 
-  // State to manage visibility of error popups
-  const [showPermissionDeniedModal, setShowPermissionDeniedModal] = React.useState(false);
-  const [showBrowserSupportModal, setShowBrowserSupportModal] = React.useState(false);
-  
   /**
    * Start interview with recording when user clicks start button
    * Checks if media stream is available
@@ -62,36 +56,38 @@ const InterviewPage = () => {
         try {
           await requestMediaPermissions();
         } catch (error) {
-          // Show permission denied modal instead of toast
-          setShowPermissionDeniedModal(true);
+          toast({
+            title: "Camera access needed",
+            description: "Please allow camera access to continue with the interview.",
+            variant: "destructive",
+          });
           return;
         }
       }
       
-      // If still no media stream, show modal instead of toast
+      // If still no media stream, show error toast
       if (!mediaStream) {
-        setShowPermissionDeniedModal(true);
+        toast({
+          title: "Camera access needed",
+          description: "Please allow camera access to continue with the interview.",
+          variant: "destructive",
+        });
         return;
       }
     }
     
     // Check if browser supports speech recognition
     if (!browserSupportsSpeechRecognition) {
-      // Show browser support modal instead of toast
-      setShowBrowserSupportModal(true);
+      toast({
+        title: "Browser compatibility",
+        description: "For best experience, use Chrome, Edge, or Safari for speech recognition.",
+        variant: "destructive",
+      });
       return;
     }
     
     // Start interview logic with media stream for recording
     await startInterview(mediaStream);
-  };
-
-  const closePermissionModal = () => {
-    setShowPermissionDeniedModal(false);
-  };
-
-  const closeBrowserSupportModal = () => {
-    setShowBrowserSupportModal(false);
   };
 
   return (
@@ -158,61 +154,6 @@ const InterviewPage = () => {
             />
           </motion.div>
         </main>
-
-        {/* Permission Denied Modal */}
-        {showPermissionDeniedModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Camera access needed</h3>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={closePermissionModal} 
-                  className="h-8 w-8 rounded-full"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="mb-6">Please allow camera access to continue with the interview. You can change this setting in your browser's permissions.</p>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={closePermissionModal}>Cancel</Button>
-                <Button onClick={() => {
-                  closePermissionModal();
-                  requestMediaPermissions && requestMediaPermissions();
-                }}>
-                  Try Again
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Browser Support Modal */}
-        {showBrowserSupportModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="bg-background rounded-lg p-6 max-w-md w-full shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Browser compatibility</h3>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={closeBrowserSupportModal} 
-                  className="h-8 w-8 rounded-full"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="mb-6">For best experience, use Chrome, Edge, or Safari for speech recognition. Your current browser may not fully support all interview features.</p>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={closeBrowserSupportModal}>Cancel</Button>
-                <Button onClick={closeBrowserSupportModal}>
-                  Continue Anyway
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </EnhancedBackground>
   );
