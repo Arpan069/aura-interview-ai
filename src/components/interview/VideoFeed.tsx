@@ -1,7 +1,8 @@
 
 import React, { RefObject } from "react";
-import { UserCheck } from "lucide-react";
+import { UserCheck, MicOff, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import VideoControls from "./VideoControls";
 
 interface VideoFeedProps {
@@ -13,6 +14,8 @@ interface VideoFeedProps {
   toggleAudio: () => void;
   toggleSystemAudio: () => void;
   isRecording?: boolean;
+  hasPermissions?: boolean | null;
+  requestMediaPermissions?: () => Promise<void>;
 }
 
 /**
@@ -26,6 +29,8 @@ interface VideoFeedProps {
  * @param toggleAudio - Function to toggle microphone audio on/off
  * @param toggleSystemAudio - Function to toggle system audio on/off
  * @param isRecording - Whether the interview is being recorded
+ * @param hasPermissions - Whether media permissions have been granted
+ * @param requestMediaPermissions - Function to request media permissions
  */
 const VideoFeed = ({
   videoRef,
@@ -36,10 +41,50 @@ const VideoFeed = ({
   toggleAudio,
   toggleSystemAudio,
   isRecording = false,
+  hasPermissions = null,
+  requestMediaPermissions
 }: VideoFeedProps) => {
   return (
     <Card className="relative glass-morphism border-primary/10">
       <CardContent className="p-2 aspect-video relative">
+        {/* Permission denied warning */}
+        {hasPermissions === false && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 z-10 p-4 text-center">
+            <AlertTriangle size={48} className="text-yellow-500 mb-4" />
+            <h3 className="text-lg font-bold mb-2">Microphone Access Required</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              To participate in the interview, please allow access to your microphone and camera.
+              Without these permissions, voice transcription will not work.
+            </p>
+            {requestMediaPermissions && (
+              <Button 
+                onClick={requestMediaPermissions}
+                className="mt-2"
+                variant="default"
+              >
+                Request Permissions
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {/* Warning for audio being off during recording */}
+        {isRecording && !isAudioOn && hasPermissions !== false && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-background/90 p-4 rounded-md z-10 text-center">
+            <MicOff className="mx-auto mb-2 text-red-500" size={32} />
+            <p className="font-medium">Microphone is off</p>
+            <p className="text-sm text-muted-foreground">Your voice will not be recorded</p>
+            <Button 
+              onClick={toggleAudio} 
+              variant="default" 
+              size="sm" 
+              className="mt-2"
+            >
+              Enable Microphone
+            </Button>
+          </div>
+        )}
+        
         {/* Main video element that displays the user's camera feed */}
         <video
           ref={videoRef}

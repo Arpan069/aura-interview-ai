@@ -28,7 +28,9 @@ const InterviewPage = () => {
     toggleVideo, 
     toggleAudio, 
     toggleSystemAudio,
-    mediaStream
+    mediaStream,
+    hasPermissions,
+    requestMediaPermissions
   } = useInterviewMedia();
   
   const { 
@@ -39,8 +41,51 @@ const InterviewPage = () => {
     transcript,
     startInterview: startInterviewLogic, 
     endInterview,
-    currentCodingQuestion
+    currentCodingQuestion,
+    transcriptionState
   } = useInterviewLogic(isSystemAudioOn);
+
+  // Display transcription status on component mount
+  useEffect(() => {
+    if (mediaStream && hasPermissions) {
+      const audioTracks = mediaStream.getAudioTracks();
+      console.log("Audio tracks:", audioTracks);
+      
+      if (audioTracks.length > 0) {
+        audioTracks.forEach((track, index) => {
+          console.log(`Audio track ${index}:`, {
+            enabled: track.enabled,
+            muted: track.muted,
+            readyState: track.readyState,
+            label: track.label,
+            id: track.id
+          });
+        });
+      } else {
+        console.warn("No audio tracks available");
+      }
+    }
+  }, [mediaStream, hasPermissions]);
+
+  // Monitor transcription state for debugging
+  useEffect(() => {
+    if (isRecording && transcriptionState) {
+      const intervalId = setInterval(() => {
+        if (transcriptionState.lastTranscriptionTime) {
+          const timeSince = Date.now() - transcriptionState.lastTranscriptionTime;
+          // Log if it's been more than 10 seconds since the last transcription
+          if (timeSince > 10000) {
+            console.log("Transcription may be stalled:", {
+              timeSinceLastTranscription: `${Math.round(timeSince / 1000)}s`,
+              errors: transcriptionState.transcriptionErrors
+            });
+          }
+        }
+      }, 5000);
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [isRecording, transcriptionState]);
 
   /**
    * Start interview with recording when user clicks start button
@@ -53,11 +98,38 @@ const InterviewPage = () => {
         description: "Please enable your camera and microphone to start the interview",
         variant: "destructive"
       });
+
+      // Try requesting permissions again
+      if (requestMediaPermissions) {
+        await requestMediaPermissions();
+        return;
+      }
+      return;
+    }
+    
+    // Verify audio is available before starting
+    const audioTracks = mediaStream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      toast({
+        title: "Microphone required",
+        description: "No microphone detected. Voice transcription will not work without a microphone.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if audio is enabled
+    if (!isAudioOn) {
+      toast({
+        title: "Microphone is off",
+        description: "Please enable your microphone for the interview",
+        variant: "warning"
+      });
+      toggleAudio();
       return;
     }
     
     // Start interview logic with media stream for recording
-    // Note: Removed the toast notification about recording in progress
     await startInterviewLogic(mediaStream);
   };
 
@@ -115,7 +187,7 @@ const InterviewPage = () => {
               isInterviewStarted={isInterviewStarted}
               currentQuestion={currentQuestion}
               startInterview={handleStartInterview}
-              isLoading={isLoading}
+              isLoading={isLoading || !hasPermissions}
             />
           </motion.div>
           
@@ -135,6 +207,8 @@ const InterviewPage = () => {
               toggleAudio={toggleAudio}
               toggleSystemAudio={toggleSystemAudio}
               isRecording={isRecording}
+              hasPermissions={hasPermissions}
+              requestMediaPermissions={requestMediaPermissions}
             />
             
             <InterviewTabs 
