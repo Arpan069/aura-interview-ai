@@ -1,157 +1,51 @@
 
-import React, { useEffect } from "react";
-import { motion } from "framer-motion";
-import InterviewHeader from "@/components/interview/InterviewHeader";
-import InterviewAvatar from "@/components/interview/InterviewAvatar";
-import VideoFeed from "@/components/interview/VideoFeed";
-import QuestionCard from "@/components/interview/QuestionCard";
-import InterviewTabs from "@/components/interview/InterviewTabs";
-import { useInterviewMedia } from "@/hooks/useInterviewMedia";
-import { useInterviewLogic } from "@/hooks/useInterviewLogic";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Play, Square } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { toast } from "@/hooks/use-toast";
+import { useInterview } from "@/hooks/useInterview";
+import VideoDisplay from "@/components/interview/VideoDisplay";
+import ChatWindow from "@/components/interview/ChatWindow";
 
 /**
  * Main Interview Page Component
- * Facilitates an AI-powered interview experience with real-time video, 
+ * Facilitates an AI-powered interview experience with real-time video,
  * transcription, and AI-generated responses
  */
 const InterviewPage = () => {
-  const { 
-    videoRef, 
-    isVideoOn, 
-    isAudioOn, 
-    isSystemAudioOn, 
-    isLoading, 
-    toggleVideo, 
-    toggleAudio, 
-    toggleSystemAudio,
-    mediaStream,
-    hasPermissions,
-    requestMediaPermissions
-  } = useInterviewMedia();
+  const navigate = useNavigate();
   
-  const { 
-    isInterviewStarted, 
-    isRecording,
-    isProcessingAI,
-    currentQuestion, 
-    transcript,
-    startInterview: startInterviewLogic, 
+  const {
+    state,
+    hasPermissions,
+    startInterview,
     endInterview,
-    currentCodingQuestion,
-    transcriptionState
-  } = useInterviewLogic(isSystemAudioOn);
-
-  // Display transcription status on component mount
-  useEffect(() => {
-    if (mediaStream && hasPermissions) {
-      const audioTracks = mediaStream.getAudioTracks();
-      console.log("Audio tracks:", audioTracks);
-      
-      if (audioTracks.length > 0) {
-        audioTracks.forEach((track, index) => {
-          console.log(`Audio track ${index}:`, {
-            enabled: track.enabled,
-            muted: track.muted,
-            readyState: track.readyState,
-            label: track.label,
-            id: track.id
-          });
+    toggleAudio,
+    toggleVideo,
+    requestPermissions,
+    currentQuestion
+  } = useInterview();
+  
+  const handleStartClick = async () => {
+    if (hasPermissions === false) {
+      const granted = await requestPermissions();
+      if (!granted) {
+        toast({
+          title: "Permission Required",
+          description: "Microphone access is needed for the interview",
+          variant: "destructive"
         });
-      } else {
-        console.warn("No audio tracks available");
-      }
-    }
-  }, [mediaStream, hasPermissions]);
-
-  // Monitor transcription state for debugging
-  useEffect(() => {
-    if (isRecording && transcriptionState) {
-      const intervalId = setInterval(() => {
-        if (transcriptionState.lastTranscriptionTime) {
-          const timeSince = Date.now() - transcriptionState.lastTranscriptionTime;
-          // Log if it's been more than 10 seconds since the last transcription
-          if (timeSince > 10000) {
-            console.log("Transcription may be stalled:", {
-              timeSinceLastTranscription: `${Math.round(timeSince / 1000)}s`,
-              errors: transcriptionState.transcriptionErrors
-            });
-          }
-        }
-      }, 5000);
-      
-      return () => clearInterval(intervalId);
-    }
-  }, [isRecording, transcriptionState]);
-
-  /**
-   * Start interview with recording when user clicks start button
-   * Checks if media stream is available
-   */
-  const handleStartInterview = async () => {
-    if (!mediaStream) {
-      toast({
-        title: "Camera/Microphone required",
-        description: "Please enable your camera and microphone to start the interview",
-        variant: "destructive"
-      });
-
-      // Try requesting permissions again
-      if (requestMediaPermissions) {
-        await requestMediaPermissions();
         return;
       }
-      return;
     }
     
-    // Verify audio is available before starting
-    const audioTracks = mediaStream.getAudioTracks();
-    if (audioTracks.length === 0) {
-      toast({
-        title: "Microphone required",
-        description: "No microphone detected. Voice transcription will not work without a microphone.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Check if audio is enabled
-    if (!isAudioOn) {
-      toast({
-        title: "Microphone is off",
-        description: "Please enable your microphone for the interview",
-        variant: "default" // Changed from "warning" to "default" to fix the type error
-      });
-      toggleAudio();
-      return;
-    }
-    
-    // Start interview logic with media stream for recording
-    await startInterviewLogic(mediaStream);
+    startInterview();
   };
-
-  /**
-   * Warn before unload if interview is in progress
-   */
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isInterviewStarted && !confirm("Are you sure you want to leave? Your interview progress will be lost.")) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isInterviewStarted]);
-
+  
   return (
     <EnhancedBackground intensity="light" variant="default">
       <div className="flex flex-col min-h-screen relative z-10">
@@ -159,63 +53,94 @@ const InterviewPage = () => {
           <ThemeToggle />
         </div>
         
-        <InterviewHeader 
-          onEndInterview={endInterview} 
-          isRecording={isRecording} 
-          isProcessingAI={isProcessingAI} 
-        />
+        {/* Header */}
+        <header className="border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-14 items-center justify-between">
+            <Button variant="ghost" onClick={() => navigate("/candidate/dashboard")} className="flex items-center gap-1">
+              <ChevronLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              {state.isActive && (
+                <div className="flex items-center gap-1">
+                  <span className="animate-pulse w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span className="text-xs">{state.isProcessing ? "AI responding..." : "Recording active"}</span>
+                </div>
+              )}
+              <h1 className="text-lg font-semibold">AI Interview Practice</h1>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={endInterview} 
+              className="text-destructive"
+              disabled={!state.isActive}
+            >
+              <Square className="h-4 w-4 mr-1" />
+              End Interview
+            </Button>
+          </div>
+        </header>
         
-        <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">
-          {/* Left side - AI Avatar */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full md:w-1/2 flex flex-col gap-4"
-          >
-            <Card className="relative overflow-hidden glass-morphism border-primary/10 h-[calc(100vh-300px)]"> 
-              <CardContent className="p-0 h-full flex flex-col justify-center items-center">
-                <InterviewAvatar 
-                  isInterviewStarted={isInterviewStarted}
-                  currentQuestion={currentQuestion} 
-                  isSystemAudioOn={isSystemAudioOn}
-                />
-              </CardContent>
-            </Card>
+        {/* Main content */}
+        <main className="flex-1 container mx-auto py-6 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left panel: Video and controls */}
+            <div className="flex flex-col gap-4">
+              <VideoDisplay 
+                videoEnabled={state.videoEnabled}
+                audioEnabled={state.audioEnabled}
+                isActive={state.isActive}
+                hasPermissions={hasPermissions}
+                isSpeaking={state.isSpeaking}
+                onRequestPermissions={requestPermissions}
+                onToggleVideo={toggleVideo}
+                onToggleAudio={toggleAudio}
+              />
+              
+              {/* Question card */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    {!state.isActive ? (
+                      <>
+                        <h3 className="text-lg font-medium mb-2">Ready to begin your interview?</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Make sure your microphone is working properly.
+                        </p>
+                        <Button 
+                          onClick={handleStartClick} 
+                          disabled={hasPermissions === false}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Play className="mr-2 h-4 w-4" />
+                          Start Interview
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-medium mb-2">Current Question:</h3>
+                        <p className="text-md">{currentQuestion?.question}</p>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
             
-            <QuestionCard 
-              isInterviewStarted={isInterviewStarted}
-              currentQuestion={currentQuestion}
-              startInterview={handleStartInterview}
-              isLoading={isLoading || !hasPermissions}
-            />
-          </motion.div>
-          
-          {/* Right side - Video feed and tabs for transcript/coding */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full md:w-1/2 flex flex-col gap-4"
-          >
-            <VideoFeed 
-              videoRef={videoRef}
-              isVideoOn={isVideoOn}
-              isAudioOn={isAudioOn}
-              isSystemAudioOn={isSystemAudioOn}
-              toggleVideo={toggleVideo}
-              toggleAudio={toggleAudio}
-              toggleSystemAudio={toggleSystemAudio}
-              isRecording={isRecording}
-              hasPermissions={hasPermissions}
-              requestMediaPermissions={requestMediaPermissions}
-            />
-            
-            <InterviewTabs 
-              transcript={transcript}
-              codingQuestion={currentCodingQuestion}
-            />
-          </motion.div>
+            {/* Right panel: Chat and transcript */}
+            <div className="flex flex-col h-full">
+              <Card className="flex-1 flex flex-col h-[520px]">
+                <CardContent className="p-4 flex-1 flex flex-col">
+                  <ChatWindow 
+                    messages={state.messages} 
+                    isProcessing={state.isProcessing} 
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </main>
       </div>
     </EnhancedBackground>
@@ -223,4 +148,3 @@ const InterviewPage = () => {
 };
 
 export default InterviewPage;
-

@@ -1,31 +1,22 @@
 
-export interface TranscriptItem {
-  speaker: string;
-  text: string;
-  timestamp: string;
+export interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
 }
 
-export interface InterviewAnalysis {
-  technicalScore: number;
-  communicationScore: number;
-  confidenceScore: number;
-  problemSolvingScore: number;
-  overallScore: number;
-  strengths: string[];
-  weaknesses: string[];
-  notes: string;
-}
-
-export interface InterviewDetail {
+export interface InterviewQuestion {
   id: number;
-  candidate: string;
-  position: string;
-  date: string;
-  time: string;
-  duration: number | null;
-  status: string;
-  score: number | null;
-  videoUrl?: string;
-  transcript?: TranscriptItem[];
-  analysis?: InterviewAnalysis;
+  question: string;
+  category: string;
+}
+
+export interface InterviewState {
+  isActive: boolean;
+  currentQuestionId: number;
+  messages: Message[];
+  audioEnabled: boolean;
+  videoEnabled: boolean;
+  isProcessing: boolean;
+  isSpeaking: boolean;
 }
