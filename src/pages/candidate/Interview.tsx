@@ -123,7 +123,7 @@ const InterviewPage = () => {
       toast({
         title: "Microphone is off",
         description: "Please enable your microphone for the interview",
-        variant: "warning"
+        variant: "default" // Changed from "warning" to "default" to fix the type error
       });
       toggleAudio();
       return;
@@ -223,3 +223,4 @@ const InterviewPage = () => {
 };
 
 export default InterviewPage;
+
