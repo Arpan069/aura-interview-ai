@@ -107,9 +107,21 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
         console.log(`Track ${i}:`, track.label, track.enabled, track.readyState);
       });
       
-      // Create a wrapper function to adapt the processAudioWithWhisper function to the expected type
-      const transcriptionCallback = (chunk: Blob) => {
-        processAudioWithWhisper(chunk);
+      // The transcriptionCallback in videoRecorder expects a function that takes a string,
+      // but processAudioWithWhisper expects a Blob, so we need a wrapper function
+      // that converts the string to a Blob before calling processAudioWithWhisper
+      const transcriptionCallback = (text: string) => {
+        // For now, just log the received text
+        console.log("Received text from transcription:", text);
+        // If we need to process this text directly, we can add that logic here
+        // Since we're getting text directly, we might want to bypass the Whisper API
+        // and directly add it to the transcript
+        addToTranscript("You", text);
+        
+        // Then process with OpenAI for a response
+        if (text.length > 0) {
+          processWithOpenAI(text, currentQuestion);
+        }
       };
       
       // Start recording with real-time transcription enabled
@@ -139,7 +151,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       console.error("Failed to start interview:", error);
       console.log("Start failed - Could not start interview recording");
     }
-  }, [questions, codingQuestions, processAudioWithWhisper, addToTranscript, isSystemAudioOn]);
+  }, [questions, codingQuestions, processAudioWithWhisper, addToTranscript, isSystemAudioOn, processWithOpenAI, currentQuestion]);
 
   /**
    * End the interview and save recording
