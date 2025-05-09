@@ -1,13 +1,14 @@
+
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { videoRecorder } from "@/utils/videoRecording";
 import { OpenAIService } from "@/services/OpenAIService";
+import { toast } from "@/hooks/use-toast";
 import { speakText } from "@/utils/speechUtils";
 import { useTranscript } from "@/hooks/useTranscript";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
 import { useAIResponse } from "@/hooks/useAIResponse";
 import { useRealTimeTranscription } from "@/hooks/useRealTimeTranscription";
-import { toast } from "@/components/ui/use-toast";
 
 const openAIService = new OpenAIService();
 
@@ -48,7 +49,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
     advanceToNextQuestion
   );
   
-  const { processAudioWithWhisper, transcriptionState, getTranscriptionStatus } = useRealTimeTranscription(
+  const { handleRealTimeTranscription, transcriptionState, getTranscriptionStatus } = useRealTimeTranscription(
     addToTranscript,
     processWithOpenAI,
     currentQuestion
@@ -61,7 +62,10 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
   const generateFullTranscript = useCallback(async (audioOrVideoBlob: Blob) => {
     try {
       transcriptionInProgress.current = true;
-      console.log("Finalizing transcript - Processing complete interview...");
+      toast({
+        title: "Finalizing transcript",
+        description: "Processing complete interview...",
+      });
       
       // Send the complete recording to OpenAI for transcription
       const result = await openAIService.transcribe(audioOrVideoBlob, {
@@ -73,11 +77,18 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
         // Add a final, complete transcription to the end of the transcript
         addToTranscript("Complete Interview Transcript", result.text);
         
-        console.log("Transcript finalized - Complete interview transcript has been created");
+        toast({
+          title: "Transcript finalized",
+          description: "Complete interview transcript has been created",
+        });
       }
     } catch (error) {
       console.error("Final transcription error:", error);
-      console.log("Final transcription incomplete - Could not generate complete transcript from recording");
+      toast({
+        title: "Final transcription incomplete",
+        description: "Could not generate complete transcript from recording",
+        variant: "destructive",
+      });
     } finally {
       transcriptionInProgress.current = false;
     }
@@ -97,7 +108,11 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       // Verify audio tracks are present and active
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) {
-        console.log("Microphone not detected - Voice recognition requires a microphone. Please connect one and try again.");
+        toast({
+          title: "Microphone not detected",
+          description: "Voice recognition requires a microphone. Please connect one and try again.",
+          variant: "destructive",
+        });
         return;
       }
       
@@ -107,27 +122,10 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
         console.log(`Track ${i}:`, track.label, track.enabled, track.readyState);
       });
       
-      // The transcriptionCallback in videoRecorder expects a function that takes a string,
-      // but processAudioWithWhisper expects a Blob, so we need a wrapper function
-      // that converts the string to a Blob before calling processAudioWithWhisper
-      const transcriptionCallback = (text: string) => {
-        // For now, just log the received text
-        console.log("Received text from transcription:", text);
-        // If we need to process this text directly, we can add that logic here
-        // Since we're getting text directly, we might want to bypass the Whisper API
-        // and directly add it to the transcript
-        addToTranscript("You", text);
-        
-        // Then process with OpenAI for a response
-        if (text.length > 0) {
-          processWithOpenAI(text, currentQuestion);
-        }
-      };
-      
       // Start recording with real-time transcription enabled
       await videoRecorder.startRecording(stream, {
         enableRealTimeTranscription: true,
-        transcriptionCallback: transcriptionCallback
+        transcriptionCallback: handleRealTimeTranscription
       });
       
       // Update recording state
@@ -149,9 +147,13 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       }, 1000);
     } catch (error) {
       console.error("Failed to start interview:", error);
-      console.log("Start failed - Could not start interview recording");
+      toast({
+        title: "Start failed",
+        description: "Could not start interview recording",
+        variant: "destructive",
+      });
     }
-  }, [questions, codingQuestions, processAudioWithWhisper, addToTranscript, isSystemAudioOn, processWithOpenAI, currentQuestion]);
+  }, [questions, codingQuestions, handleRealTimeTranscription, addToTranscript, isSystemAudioOn]);
 
   /**
    * End the interview and save recording
