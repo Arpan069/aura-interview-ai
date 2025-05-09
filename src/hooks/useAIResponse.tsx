@@ -1,6 +1,5 @@
 import { useCallback, useState, useRef } from "react";
 import { OpenAIService } from "@/services/OpenAIService";
-import { toast } from "@/hooks/use-toast";
 import { speakText } from "@/utils/speechUtils";
 
 const openAIService = new OpenAIService();
@@ -91,11 +90,6 @@ export const useAIResponse = (
       }
     } catch (error) {
       console.error("AI processing error:", error);
-      toast({
-        title: "AI Processing Error",
-        description: "Failed to generate AI response. Please check your API key.",
-        variant: "destructive",
-      });
     } finally {
       setIsProcessingAI(false);
       

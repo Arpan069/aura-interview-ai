@@ -40,22 +40,31 @@ const InterviewPage = () => {
     startInterview,
     endInterview,
     currentCodingQuestion,
-    browserSupportsSpeechRecognition,
-    isListening
+    isListening,
+    startListening,
+    stopListening,
+    lastTranscribed,
+    isTranscribing
   } = useInterview(isSystemAudioOn);
-
-  // Debug state to show speech recognition status
-  const [lastTranscribed, setLastTranscribed] = useState("");
   
-  // Effect to monitor transcription updates
+  const [apiKeyStatus, setApiKeyStatus] = useState<'unknown' | 'missing' | 'present'>('unknown');
+  
+  // Check for OpenAI API key presence
   useEffect(() => {
-    if (transcript.length > 0) {
-      const lastEntry = transcript[transcript.length - 1];
-      if (lastEntry.speaker === "You") {
-        setLastTranscribed(lastEntry.text);
-      }
-    }
-  }, [transcript]);
+    // Check if OpenAI API key is configured
+    fetch('/api/check-openai-key')
+      .catch(() => {
+        // API route doesn't exist, check if we see related errors in console
+        const hasConsoleErrors = console.warn;
+        if (hasConsoleErrors) {
+          import('@/services/OpenAIService')
+            .then(module => {
+              const apiKeyConfigured = !!module.OPENAI_API_KEY || !!module.openAIService?.apiKey;
+              setApiKeyStatus(apiKeyConfigured ? 'present' : 'missing');
+            });
+        }
+      });
+  }, []);
 
   /**
    * Start interview with recording when user clicks start button
@@ -80,11 +89,6 @@ const InterviewPage = () => {
       }
     }
     
-    // Check if browser supports speech recognition
-    if (!browserSupportsSpeechRecognition) {
-      console.info("Browser compatibility: For best experience, use Chrome, Edge, or Safari for speech recognition.");
-    }
-    
     // Start interview logic with media stream for recording
     await startInterview(mediaStream);
   };
@@ -101,6 +105,14 @@ const InterviewPage = () => {
           isRecording={isRecording} 
           isProcessingAI={isProcessingAI} 
         />
+        
+        {/* API Key warning */}
+        {apiKeyStatus === 'missing' && (
+          <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-2 text-center text-sm">
+            <strong>API Key Required:</strong> Add your OpenAI API key in src/services/OpenAIService.ts 
+            to enable real speech recognition and AI responses.
+          </div>
+        )}
         
         <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">
           {/* Left side - AI Avatar */}
@@ -146,6 +158,9 @@ const InterviewPage = () => {
               isRecording={isRecording}
               isListening={isListening}
               lastTranscribed={lastTranscribed}
+              startListening={startListening}
+              stopListening={stopListening}
+              isTranscribing={isTranscribing}
             />
             
             <InterviewTabs 

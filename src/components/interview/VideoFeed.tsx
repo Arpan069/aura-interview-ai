@@ -17,6 +17,9 @@ interface VideoFeedProps {
   isListening?: boolean;
   requestMediaPermissions?: () => Promise<void>;
   lastTranscribed?: string;
+  startListening?: () => void;
+  stopListening?: () => void;
+  isTranscribing?: boolean;
 }
 
 /**
@@ -33,7 +36,10 @@ const VideoFeed = ({
   isRecording = false,
   isListening = false,
   requestMediaPermissions,
-  lastTranscribed = ""
+  lastTranscribed = "",
+  startListening,
+  stopListening,
+  isTranscribing = false
 }: VideoFeedProps) => {
   const [showTranscribed, setShowTranscribed] = useState(false);
   
@@ -95,6 +101,34 @@ const VideoFeed = ({
           toggleSystemAudio={toggleSystemAudio}
         />
         
+        {/* Listen button (new) */}
+        {isRecording && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            {isListening ? (
+              <Button 
+                onClick={stopListening}
+                variant="destructive"
+                size="lg"
+                className="rounded-full px-8 flex items-center gap-2"
+              >
+                <MicOff size={18} />
+                Stop Listening
+              </Button>
+            ) : (
+              <Button 
+                onClick={startListening}
+                variant="default"
+                size="lg"
+                className="rounded-full px-8 flex items-center gap-2"
+                disabled={isTranscribing}
+              >
+                <Mic size={18} />
+                {isTranscribing ? "Processing..." : "Start Listening"}
+              </Button>
+            )}
+          </div>
+        )}
+        
         {/* Video status indicators */}
         <div className="absolute top-4 left-4 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
           {isRecording ? (
@@ -126,6 +160,14 @@ const VideoFeed = ({
                 <span className="text-xs font-medium text-yellow-500">Not listening</span>
               </>
             )}
+          </div>
+        )}
+        
+        {/* Transcribing indicator */}
+        {isRecording && isTranscribing && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
+            <span className="animate-pulse w-2 h-2 bg-blue-500 rounded-full"></span>
+            <span className="text-xs font-medium text-blue-500">Processing Speech</span>
           </div>
         )}
         

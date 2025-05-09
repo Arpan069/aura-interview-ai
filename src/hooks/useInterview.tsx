@@ -2,12 +2,12 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { videoRecorder } from "@/utils/videoRecording";
-import { toast } from "@/hooks/use-toast";
 import { speakText } from "@/utils/speechUtils";
 import { useTranscript } from "@/hooks/useTranscript";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
 import { useAIResponse } from "@/hooks/useAIResponse";
-import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useRealTimeTranscription } from "@/hooks/useRealTimeTranscription";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 
 /**
  * Custom hook for managing interview logic and state
@@ -20,7 +20,8 @@ export const useInterview = (isSystemAudioOn: boolean) => {
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [lastTranscribed, setLastTranscribed] = useState("");
   
   // Use custom hooks
   const { transcript, addToTranscript } = useTranscript();
@@ -47,53 +48,59 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     advanceToNextQuestion
   );
   
-  // Handler for new speech transcription
-  const handleSpeechTranscript = useCallback((text: string) => {
-    if (!text || text.trim().length < 2) return;
-    
-    console.log("Speech transcription received:", text);
-    addToTranscript("You", text);
-    
-    // Process with AI for meaningful content (2+ words)
-    if (text.trim().split(/\s+/).length >= 2) {
-      // Add a small delay to allow for transcript to be displayed
-      setTimeout(() => {
-        processWithOpenAI(text, currentQuestion)
-          .catch(err => console.error("Error processing speech:", err));
-      }, 500);
-    }
-  }, [addToTranscript, processWithOpenAI, currentQuestion]);
+  // Handler for new transcription
+  const handleTranscriptionUpdate = useCallback((text: string) => {
+    if (!text || text.trim().length === 0) return;
+    setLastTranscribed(text);
+  }, []);
   
-  // Use speech recognition with the enhanced handler
+  // Use the Audio Recorder hook
   const { 
-    startListening,
-    stopListening,
-    clearTranscript: clearSpeechTranscript,
-    isListening,
-    browserSupportsSpeechRecognition,
-    resetAndRestartListening,
-    hasMicPermission
-  } = useSpeechToText(handleSpeechTranscript, isInterviewStarted);
-
-  // Monitor and restart speech recognition if it stops unexpectedly
+    isRecording: isAudioRecording,
+    startRecording: startAudioRecording,
+    stopRecording: stopAudioRecording,
+    audioBlob,
+  } = useAudioRecorder({
+    maxDuration: 15000, // 15 seconds max recording at a time
+  });
+  
+  // Use the Real-Time Transcription hook with Whisper
+  const {
+    processAudioWithWhisper,
+    transcriptionState,
+    resetTranscription
+  } = useRealTimeTranscription(
+    addToTranscript,
+    processWithOpenAI,
+    currentQuestion
+  );
+  
+  // Monitor audio blob changes and process with Whisper
   useEffect(() => {
-    let checkInterval: NodeJS.Timeout | null = null;
-    
-    if (isInterviewStarted && !isProcessingAI) {
-      checkInterval = setInterval(() => {
-        if (!isListening && isSpeechRecognitionActive) {
-          console.log("Speech recognition appears to have stopped, restarting...");
-          resetAndRestartListening();
-        }
-      }, 5000); // Check every 5 seconds
+    if (audioBlob && isInterviewStarted) {
+      console.log("New audio blob available, processing with Whisper");
+      processAudioWithWhisper(audioBlob);
+      handleTranscriptionUpdate("Processing your response...");
     }
+  }, [audioBlob, isInterviewStarted, processAudioWithWhisper, handleTranscriptionUpdate]);
+
+  // Handler for starting listening
+  const startListening = useCallback(async () => {
+    if (isAudioRecording || isProcessingAI) return;
     
-    return () => {
-      if (checkInterval) {
-        clearInterval(checkInterval);
-      }
-    };
-  }, [isInterviewStarted, isListening, isSpeechRecognitionActive, isProcessingAI, resetAndRestartListening]);
+    console.log("Starting listening with audio recorder");
+    setIsListening(true);
+    await startAudioRecording();
+  }, [isAudioRecording, isProcessingAI, startAudioRecording]);
+  
+  // Handler for stopping listening
+  const stopListening = useCallback(() => {
+    if (!isAudioRecording) return;
+    
+    console.log("Stopping listening");
+    stopAudioRecording();
+    setIsListening(false);
+  }, [isAudioRecording, stopAudioRecording]);
 
   /**
    * Start the interview and recording
@@ -104,6 +111,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
       // Reset any previous state
       resetConversation();
       resetQuestions();
+      resetTranscription();
       
       // Set interview as started
       setIsInterviewStarted(true);
@@ -115,9 +123,6 @@ export const useInterview = (isSystemAudioOn: boolean) => {
       await videoRecorder.startRecording(stream);
       setIsRecording(true);
       
-      // Clear any previous transcript
-      clearSpeechTranscript();
-      
       // Add initial AI question to transcript
       addToTranscript("AI Interviewer", questions[0]);
       
@@ -125,43 +130,23 @@ export const useInterview = (isSystemAudioOn: boolean) => {
       setTimeout(() => {
         // Simulate AI speaking the question
         speakText(questions[0], isSystemAudioOn)
-          .then(() => {
-            // Start listening for speech after AI finishes speaking
-            startListening();
-            setIsSpeechRecognitionActive(true);
-            console.log("Started listening after AI spoke");
-          })
           .catch(err => {
             console.error("Error during AI speech:", err);
-            // Still start listening even if speech fails
-            startListening();
-            setIsSpeechRecognitionActive(true);
           });
       }, 500);
       
       // Add a test message to verify the system is working
       console.log("Interview started successfully");
-      toast({
-        title: "Interview Started",
-        description: "Speak clearly when answering questions",
-        duration: 5000,
-      });
     } catch (error) {
       console.error("Failed to start interview:", error);
-      toast({
-        title: "Start failed",
-        description: "Could not start interview recording",
-        variant: "destructive",
-      });
     }
   }, [
     questions, 
     addToTranscript, 
-    isSystemAudioOn, 
-    startListening, 
-    clearSpeechTranscript,
+    isSystemAudioOn,
     resetConversation,
     resetQuestions,
+    resetTranscription,
     setCurrentQuestion
   ]);
 
@@ -170,9 +155,10 @@ export const useInterview = (isSystemAudioOn: boolean) => {
    */
   const endInterview = useCallback(async () => {
     try {
-      // Stop speech recognition
-      stopListening();
-      setIsSpeechRecognitionActive(false);
+      // Stop listening if active
+      if (isListening) {
+        stopListening();
+      }
       
       if (isRecording) {
         // Stop recording and get the blob
@@ -182,25 +168,15 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         // Save the recording and get the URL
         const url = await videoRecorder.saveRecording(recordedBlob);
         setVideoUrl(url);
-        
-        toast({
-          title: "Interview completed",
-          description: "Recording saved successfully",
-        });
       }
       
       // Navigate back to dashboard
       navigate("/candidate/dashboard");
     } catch (error) {
       console.error("Error ending interview:", error);
-      toast({
-        title: "Error",
-        description: "Failed to end interview properly",
-        variant: "destructive",
-      });
       navigate("/candidate/dashboard");
     }
-  }, [isRecording, navigate, stopListening]);
+  }, [isRecording, isListening, navigate, stopListening]);
 
   // Clean up on component unmount
   useEffect(() => {
@@ -209,10 +185,11 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         // Attempt to stop recording if component unmounts during recording
         videoRecorder.cleanup();
       }
-      stopListening();
-      setIsSpeechRecognitionActive(false);
+      if (isListening) {
+        stopListening();
+      }
     };
-  }, [isRecording, stopListening]);
+  }, [isRecording, isListening, stopListening]);
 
   return {
     isInterviewStarted,
@@ -226,7 +203,9 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     videoUrl,
     isProcessingAI,
     isListening,
-    browserSupportsSpeechRecognition,
-    hasMicPermission
+    startListening,
+    stopListening,
+    lastTranscribed,
+    isTranscribing: transcriptionState.isTranscribing,
   };
 };
