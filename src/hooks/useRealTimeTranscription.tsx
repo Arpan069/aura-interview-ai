@@ -1,6 +1,5 @@
 
 import { useCallback, useRef, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
 
 interface TranscriptionState {
   isTranscribing: boolean;
@@ -69,13 +68,9 @@ export const useRealTimeTranscription = (
                 transcriptionErrors: prev.transcriptionErrors + 1
               }));
               
-              // Show error toast only after multiple failures
+              // Instead of showing toast, just log the error
               if (transcriptionState.transcriptionErrors > 3) {
-                toast({
-                  title: "AI Processing Issue",
-                  description: "We're having trouble processing your responses. Please check your API key.",
-                  variant: "destructive",
-                });
+                console.error("AI Processing Issue: We're having trouble processing your responses. Please check your API key.");
               }
             });
           

@@ -11,7 +11,6 @@ import { useInterview } from "@/hooks/useInterview";
 import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { toast } from "@/hooks/use-toast";
 
 /**
  * Main Interview Page Component
@@ -69,33 +68,21 @@ const InterviewPage = () => {
         try {
           await requestMediaPermissions();
         } catch (error) {
-          toast({
-            title: "Camera access needed",
-            description: "Please allow camera and microphone access to continue.",
-            variant: "default",
-          });
+          console.error("Camera access needed: Please allow camera and microphone access to continue.");
           return;
         }
       }
       
-      // If still no media stream, show toast
+      // If still no media stream, log error
       if (!mediaStream) {
-        toast({
-          title: "Camera access needed",
-          description: "Please allow camera and microphone access to continue.",
-          variant: "default",
-        });
+        console.error("Camera access needed: Please allow camera and microphone access to continue.");
         return;
       }
     }
     
     // Check if browser supports speech recognition
     if (!browserSupportsSpeechRecognition) {
-      toast({
-        title: "Browser compatibility",
-        description: "For best experience, use Chrome, Edge, or Safari for speech recognition.",
-        variant: "default",
-      });
+      console.info("Browser compatibility: For best experience, use Chrome, Edge, or Safari for speech recognition.");
     }
     
     // Start interview logic with media stream for recording
