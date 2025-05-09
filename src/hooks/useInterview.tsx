@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { videoRecorder } from "@/utils/videoRecording";
 import { toast } from "@/hooks/use-toast";
@@ -43,22 +43,26 @@ export const useInterview = (isSystemAudioOn: boolean) => {
   
   // Handler for new speech transcription
   const handleSpeechTranscript = useCallback((text: string) => {
-    if (!text) return;
+    if (!text || text.trim().length < 2) return;
     
     console.log("Speech transcription received:", text);
     addToTranscript("You", text);
     
-    // Process with AI if we have enough text
-    if (text.split(" ").length >= 3) {
-      processWithOpenAI(text, currentQuestion);
+    // Process with AI for meaningful content (3+ words)
+    if (text.trim().split(/\s+/).length >= 2) {
+      // Add a small delay to allow for transcript to be displayed
+      setTimeout(() => {
+        processWithOpenAI(text, currentQuestion)
+          .catch(err => console.error("Error processing speech:", err));
+      }, 500);
     }
   }, [addToTranscript, processWithOpenAI, currentQuestion]);
   
-  // Use speech recognition
+  // Use speech recognition with the enhanced handler
   const { 
     startListening,
     stopListening,
-    clearTranscript,
+    clearTranscript: clearSpeechTranscript,
     isListening,
     browserSupportsSpeechRecognition
   } = useSpeechToText(handleSpeechTranscript, isInterviewStarted);
@@ -78,17 +82,35 @@ export const useInterview = (isSystemAudioOn: boolean) => {
       await videoRecorder.startRecording(stream);
       setIsRecording(true);
       
+      // Clear any previous transcript
+      clearSpeechTranscript();
+      
       // Add initial AI question to transcript
       addToTranscript("AI Interviewer", questions[0]);
       
-      // Simulate AI speaking the question
-      await speakText(questions[0], isSystemAudioOn);
-      
-      // Start listening for speech
-      startListening();
+      // Delay speaking slightly to ensure UI updates first
+      setTimeout(() => {
+        // Simulate AI speaking the question
+        speakText(questions[0], isSystemAudioOn)
+          .then(() => {
+            // Start listening for speech after AI finishes speaking
+            startListening();
+            console.log("Started listening after AI spoke");
+          })
+          .catch(err => {
+            console.error("Error during AI speech:", err);
+            // Still start listening even if speech fails
+            startListening();
+          });
+      }, 500);
       
       // Add a test message to verify the system is working
       console.log("Interview started successfully");
+      toast({
+        title: "Interview Started",
+        description: "Speak clearly when answering questions",
+        duration: 5000,
+      });
     } catch (error) {
       console.error("Failed to start interview:", error);
       toast({
@@ -97,7 +119,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         variant: "destructive",
       });
     }
-  }, [questions, addToTranscript, isSystemAudioOn, startListening]);
+  }, [questions, addToTranscript, isSystemAudioOn, startListening, clearSpeechTranscript]);
 
   /**
    * End the interview and save recording

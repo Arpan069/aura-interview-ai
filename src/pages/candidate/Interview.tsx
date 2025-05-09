@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import InterviewHeader from "@/components/interview/InterviewHeader";
 import InterviewAvatar from "@/components/interview/InterviewAvatar";
@@ -45,6 +45,19 @@ const InterviewPage = () => {
     isListening
   } = useInterview(isSystemAudioOn);
 
+  // Debug state to show speech recognition status
+  const [lastTranscribed, setLastTranscribed] = useState("");
+  
+  // Effect to monitor transcription updates
+  useEffect(() => {
+    if (transcript.length > 0) {
+      const lastEntry = transcript[transcript.length - 1];
+      if (lastEntry.speaker === "You") {
+        setLastTranscribed(lastEntry.text);
+      }
+    }
+  }, [transcript]);
+
   /**
    * Start interview with recording when user clicks start button
    * Checks if media stream is available
@@ -58,19 +71,19 @@ const InterviewPage = () => {
         } catch (error) {
           toast({
             title: "Camera access needed",
-            description: "Please allow camera access to continue with the interview.",
-            variant: "destructive",
+            description: "Please allow camera and microphone access to continue.",
+            variant: "default",
           });
           return;
         }
       }
       
-      // If still no media stream, show error toast
+      // If still no media stream, show toast
       if (!mediaStream) {
         toast({
           title: "Camera access needed",
-          description: "Please allow camera access to continue with the interview.",
-          variant: "destructive",
+          description: "Please allow camera and microphone access to continue.",
+          variant: "default",
         });
         return;
       }
@@ -81,9 +94,8 @@ const InterviewPage = () => {
       toast({
         title: "Browser compatibility",
         description: "For best experience, use Chrome, Edge, or Safari for speech recognition.",
-        variant: "destructive",
+        variant: "default",
       });
-      return;
     }
     
     // Start interview logic with media stream for recording
@@ -146,6 +158,7 @@ const InterviewPage = () => {
               toggleSystemAudio={toggleSystemAudio}
               isRecording={isRecording}
               isListening={isListening}
+              lastTranscribed={lastTranscribed}
             />
             
             <InterviewTabs 
