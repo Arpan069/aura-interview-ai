@@ -7,6 +7,7 @@ import { useTranscript } from "@/hooks/useTranscript";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
 import { useAIResponse } from "@/hooks/useAIResponse";
 import { useRealTimeTranscription } from "@/hooks/useRealTimeTranscription";
+import { toast } from "@/components/ui/use-toast";
 
 const openAIService = new OpenAIService();
 
@@ -106,10 +107,15 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
         console.log(`Track ${i}:`, track.label, track.enabled, track.readyState);
       });
       
+      // Create a wrapper function to adapt the processAudioWithWhisper function to the expected type
+      const transcriptionCallback = (chunk: Blob) => {
+        processAudioWithWhisper(chunk);
+      };
+      
       // Start recording with real-time transcription enabled
       await videoRecorder.startRecording(stream, {
         enableRealTimeTranscription: true,
-        transcriptionCallback: processAudioWithWhisper // Use the function that exists
+        transcriptionCallback: transcriptionCallback
       });
       
       // Update recording state
