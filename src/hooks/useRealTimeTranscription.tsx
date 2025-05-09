@@ -1,11 +1,6 @@
 
 import { useCallback, useRef, useState } from "react";
-
-interface TranscriptionState {
-  isTranscribing: boolean;
-  lastTranscriptionTime: number | null;
-  transcriptionErrors: number;
-}
+import { TranscriptionState } from "@/types/transcript";
 
 /**
  * Hook for managing real-time transcription during interview
