@@ -28,10 +28,12 @@ export const useRealTimeTranscription = (
   
   // Debounce timer to avoid processing too frequently
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Timeout for no response from AI
+  const aiResponseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Callback function for handling real-time transcriptions 
-   * @param text The transcribed text from OpenAI API
+   * @param text The transcribed text from speech recognition
    */
   const handleRealTimeTranscription = useCallback((text: string) => {
     // Update state and log for debugging
@@ -45,7 +47,7 @@ export const useRealTimeTranscription = (
     
     if (text && text.trim()) {
       // Add transcribed text to the transcript UI
-      addToTranscript("You (Transcribed)", text);
+      addToTranscript("You", text);
       
       // Accumulate text for better context
       accumulatedText.current = `${accumulatedText.current} ${text}`.trim();
@@ -66,16 +68,34 @@ export const useRealTimeTranscription = (
                 ...prev,
                 transcriptionErrors: prev.transcriptionErrors + 1
               }));
+              
+              // Show error toast only after multiple failures
+              if (transcriptionState.transcriptionErrors > 3) {
+                toast({
+                  title: "AI Processing Issue",
+                  description: "We're having trouble processing your responses. Please check your API key.",
+                  variant: "destructive",
+                });
+              }
             });
           
           // Reset accumulated text after processing
           accumulatedText.current = "";
+          
+          // Set timeout for AI response
+          if (aiResponseTimeoutRef.current) {
+            clearTimeout(aiResponseTimeoutRef.current);
+          }
+          
+          aiResponseTimeoutRef.current = setTimeout(() => {
+            console.log("AI response timeout - might need to prompt again");
+          }, 15000); // 15 second timeout for AI response
         }
-      }, 2000); // 2 seconds delay to collect more speech
+      }, 1500); // 1.5 seconds delay to collect more speech
     } else {
       console.log("Empty transcription received");
     }
-  }, [addToTranscript, processWithOpenAI, currentQuestion]);
+  }, [addToTranscript, processWithOpenAI, currentQuestion, transcriptionState.transcriptionErrors]);
 
   // Function to debug transcription status
   const getTranscriptionStatus = useCallback(() => {
@@ -83,13 +103,26 @@ export const useRealTimeTranscription = (
       ...transcriptionState,
       timeSinceLastTranscription: transcriptionState.lastTranscriptionTime 
         ? Date.now() - transcriptionState.lastTranscriptionTime 
-        : null
+        : null,
+      accumulatedTextLength: accumulatedText.current.length
     };
   }, [transcriptionState]);
+
+  // Function to reset the transcription state
+  const resetTranscription = useCallback(() => {
+    accumulatedText.current = "";
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    if (aiResponseTimeoutRef.current) {
+      clearTimeout(aiResponseTimeoutRef.current);
+    }
+  }, []);
 
   return {
     handleRealTimeTranscription,
     transcriptionState,
-    getTranscriptionStatus
+    getTranscriptionStatus,
+    resetTranscription
   };
 };

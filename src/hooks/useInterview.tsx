@@ -20,6 +20,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
   
   // Use custom hooks
   const { transcript, addToTranscript } = useTranscript();
@@ -32,10 +33,15 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     setShowCodingChallenge,
     advanceToNextQuestion,
     questions,
-    codingQuestions
+    codingQuestions,
+    resetQuestions
   } = useInterviewQuestions(isSystemAudioOn, addToTranscript);
   
-  const { isProcessingAI, processWithOpenAI } = useAIResponse(
+  const { 
+    isProcessingAI, 
+    processWithOpenAI,
+    resetConversation 
+  } = useAIResponse(
     isSystemAudioOn, 
     addToTranscript, 
     advanceToNextQuestion
@@ -48,7 +54,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     console.log("Speech transcription received:", text);
     addToTranscript("You", text);
     
-    // Process with AI for meaningful content (3+ words)
+    // Process with AI for meaningful content (2+ words)
     if (text.trim().split(/\s+/).length >= 2) {
       // Add a small delay to allow for transcript to be displayed
       setTimeout(() => {
@@ -64,8 +70,30 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     stopListening,
     clearTranscript: clearSpeechTranscript,
     isListening,
-    browserSupportsSpeechRecognition
+    browserSupportsSpeechRecognition,
+    resetAndRestartListening,
+    hasMicPermission
   } = useSpeechToText(handleSpeechTranscript, isInterviewStarted);
+
+  // Monitor and restart speech recognition if it stops unexpectedly
+  useEffect(() => {
+    let checkInterval: NodeJS.Timeout | null = null;
+    
+    if (isInterviewStarted && !isProcessingAI) {
+      checkInterval = setInterval(() => {
+        if (!isListening && isSpeechRecognitionActive) {
+          console.log("Speech recognition appears to have stopped, restarting...");
+          resetAndRestartListening();
+        }
+      }, 5000); // Check every 5 seconds
+    }
+    
+    return () => {
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
+    };
+  }, [isInterviewStarted, isListening, isSpeechRecognitionActive, isProcessingAI, resetAndRestartListening]);
 
   /**
    * Start the interview and recording
@@ -73,8 +101,13 @@ export const useInterview = (isSystemAudioOn: boolean) => {
    */
   const startInterview = useCallback(async (stream: MediaStream) => {
     try {
+      // Reset any previous state
+      resetConversation();
+      resetQuestions();
+      
       // Set interview as started
       setIsInterviewStarted(true);
+      
       // Set the first question
       setCurrentQuestion(questions[0]);
       
@@ -95,12 +128,14 @@ export const useInterview = (isSystemAudioOn: boolean) => {
           .then(() => {
             // Start listening for speech after AI finishes speaking
             startListening();
+            setIsSpeechRecognitionActive(true);
             console.log("Started listening after AI spoke");
           })
           .catch(err => {
             console.error("Error during AI speech:", err);
             // Still start listening even if speech fails
             startListening();
+            setIsSpeechRecognitionActive(true);
           });
       }, 500);
       
@@ -119,7 +154,16 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         variant: "destructive",
       });
     }
-  }, [questions, addToTranscript, isSystemAudioOn, startListening, clearSpeechTranscript]);
+  }, [
+    questions, 
+    addToTranscript, 
+    isSystemAudioOn, 
+    startListening, 
+    clearSpeechTranscript,
+    resetConversation,
+    resetQuestions,
+    setCurrentQuestion
+  ]);
 
   /**
    * End the interview and save recording
@@ -128,6 +172,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     try {
       // Stop speech recognition
       stopListening();
+      setIsSpeechRecognitionActive(false);
       
       if (isRecording) {
         // Stop recording and get the blob
@@ -165,6 +210,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         videoRecorder.cleanup();
       }
       stopListening();
+      setIsSpeechRecognitionActive(false);
     };
   }, [isRecording, stopListening]);
 
@@ -180,6 +226,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     videoUrl,
     isProcessingAI,
     isListening,
-    browserSupportsSpeechRecognition
+    browserSupportsSpeechRecognition,
+    hasMicPermission
   };
 };

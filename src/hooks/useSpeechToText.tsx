@@ -3,6 +3,7 @@ import "regenerator-runtime/runtime";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { toast } from "@/hooks/use-toast";
+import { requestAudioPermission } from "@/utils/speechUtils";
 
 export const useSpeechToText = (
   onTranscript: (text: string) => void,
@@ -19,10 +20,30 @@ export const useSpeechToText = (
   
   const [lastProcessedTranscript, setLastProcessedTranscript] = useState('');
   const [isRecognitionActive, setIsRecognitionActive] = useState(false);
+  const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
   const startAttempts = useRef(0);
   const lastStartTime = useRef<number | null>(null);
+  const silentPeriodTimer = useRef<NodeJS.Timeout | null>(null);
   
-  // Check for recognition errors
+  // Check microphone permission on mount
+  useEffect(() => {
+    const checkMicPermission = async () => {
+      const hasPermission = await requestAudioPermission();
+      setHasMicPermission(hasPermission);
+      
+      if (!hasPermission) {
+        console.warn("Microphone permission not granted");
+        toast({
+          title: "Microphone access needed",
+          description: "Please allow microphone access for speech recognition."
+        });
+      }
+    };
+    
+    checkMicPermission();
+  }, []);
+  
+  // Check for recognition errors or silent periods
   useEffect(() => {
     if (isInterviewActive && !listening && isRecognitionActive) {
       // Only log after multiple failures to avoid false positives
@@ -34,13 +55,68 @@ export const useSpeechToText = (
         }, 1000);
       }
     }
-  }, [listening, isInterviewActive, isRecognitionActive]);
+    
+    // Reset the silent period timer when we receive new transcripts
+    if (transcript !== lastProcessedTranscript) {
+      // Clear previous timer if exists
+      if (silentPeriodTimer.current) {
+        clearTimeout(silentPeriodTimer.current);
+      }
+      
+      // Set new timer to check if user stopped speaking
+      silentPeriodTimer.current = setTimeout(() => {
+        if (isInterviewActive && isRecognitionActive && lastProcessedTranscript === transcript) {
+          console.log("Detected silent period. Restarting speech recognition...");
+          resetAndRestartListening();
+        }
+      }, 10000); // 10 seconds of silence
+    }
+    
+    return () => {
+      if (silentPeriodTimer.current) {
+        clearTimeout(silentPeriodTimer.current);
+      }
+    };
+  }, [listening, isInterviewActive, isRecognitionActive, transcript, lastProcessedTranscript]);
+  
+  // Reset and restart recognition
+  const resetAndRestartListening = useCallback(() => {
+    if (isRecognitionActive) {
+      SpeechRecognition.stopListening().then(() => {
+        resetTranscript();
+        setTimeout(() => {
+          startListening();
+        }, 1000);
+      }).catch(err => {
+        console.error("Error resetting speech recognition:", err);
+      });
+    }
+  }, [isRecognitionActive, resetTranscript]);
   
   // Start speech recognition with retry logic
   const startListening = useCallback(async () => {
     if (!browserSupportsSpeechRecognition) {
       console.error('Browser does not support speech recognition');
+      toast({
+        title: "Browser not supported",
+        description: "Your browser doesn't support speech recognition. Try Chrome or Edge.",
+        variant: "destructive",
+      });
       return;
+    }
+    
+    // Check/request permission if needed
+    if (hasMicPermission === false) {
+      const hasPermission = await requestAudioPermission();
+      setHasMicPermission(hasPermission);
+      
+      if (!hasPermission) {
+        toast({
+          title: "Microphone access needed",
+          description: "Please allow microphone access for speech recognition."
+        });
+        return;
+      }
     }
     
     // Prevent rapid restart attempts
@@ -83,7 +159,7 @@ export const useSpeechToText = (
         }, 2000);
       }
     }
-  }, [browserSupportsSpeechRecognition, isMicrophoneAvailable, isInterviewActive]);
+  }, [browserSupportsSpeechRecognition, isMicrophoneAvailable, isInterviewActive, hasMicPermission]);
   
   // Stop speech recognition
   const stopListening = useCallback(() => {
@@ -147,6 +223,8 @@ export const useSpeechToText = (
     stopListening,
     clearTranscript,
     resetTranscript,
-    browserSupportsSpeechRecognition
+    browserSupportsSpeechRecognition,
+    hasMicPermission,
+    resetAndRestartListening
   };
 };

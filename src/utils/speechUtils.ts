@@ -85,3 +85,20 @@ export const speakWithBrowserSynthesis = (
     window.speechSynthesis.speak(utterance);
   });
 };
+
+/**
+ * Get audio input permission and check if microphone is available
+ */
+export const requestAudioPermission = async (): Promise<boolean> => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    // Clean up the stream after we've checked permission
+    stream.getTracks().forEach(track => track.stop());
+    
+    return true;
+  } catch (error) {
+    console.error("Microphone permission denied:", error);
+    return false;
+  }
+};
