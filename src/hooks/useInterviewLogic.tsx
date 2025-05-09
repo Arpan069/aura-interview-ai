@@ -1,9 +1,7 @@
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { videoRecorder } from "@/utils/videoRecording";
 import { OpenAIService } from "@/services/OpenAIService";
-import { toast } from "@/hooks/use-toast";
 import { speakText } from "@/utils/speechUtils";
 import { useTranscript } from "@/hooks/useTranscript";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
@@ -49,7 +47,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
     advanceToNextQuestion
   );
   
-  const { handleRealTimeTranscription, transcriptionState, getTranscriptionStatus } = useRealTimeTranscription(
+  const { processAudioWithWhisper, transcriptionState, getTranscriptionStatus } = useRealTimeTranscription(
     addToTranscript,
     processWithOpenAI,
     currentQuestion
@@ -62,10 +60,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
   const generateFullTranscript = useCallback(async (audioOrVideoBlob: Blob) => {
     try {
       transcriptionInProgress.current = true;
-      toast({
-        title: "Finalizing transcript",
-        description: "Processing complete interview...",
-      });
+      console.log("Finalizing transcript - Processing complete interview...");
       
       // Send the complete recording to OpenAI for transcription
       const result = await openAIService.transcribe(audioOrVideoBlob, {
@@ -77,18 +72,11 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
         // Add a final, complete transcription to the end of the transcript
         addToTranscript("Complete Interview Transcript", result.text);
         
-        toast({
-          title: "Transcript finalized",
-          description: "Complete interview transcript has been created",
-        });
+        console.log("Transcript finalized - Complete interview transcript has been created");
       }
     } catch (error) {
       console.error("Final transcription error:", error);
-      toast({
-        title: "Final transcription incomplete",
-        description: "Could not generate complete transcript from recording",
-        variant: "destructive",
-      });
+      console.log("Final transcription incomplete - Could not generate complete transcript from recording");
     } finally {
       transcriptionInProgress.current = false;
     }
@@ -108,11 +96,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       // Verify audio tracks are present and active
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) {
-        toast({
-          title: "Microphone not detected",
-          description: "Voice recognition requires a microphone. Please connect one and try again.",
-          variant: "destructive",
-        });
+        console.log("Microphone not detected - Voice recognition requires a microphone. Please connect one and try again.");
         return;
       }
       
@@ -125,7 +109,7 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       // Start recording with real-time transcription enabled
       await videoRecorder.startRecording(stream, {
         enableRealTimeTranscription: true,
-        transcriptionCallback: handleRealTimeTranscription
+        transcriptionCallback: processAudioWithWhisper // Use the function that exists
       });
       
       // Update recording state
@@ -147,13 +131,9 @@ export const useInterviewLogic = (isSystemAudioOn: boolean) => {
       }, 1000);
     } catch (error) {
       console.error("Failed to start interview:", error);
-      toast({
-        title: "Start failed",
-        description: "Could not start interview recording",
-        variant: "destructive",
-      });
+      console.log("Start failed - Could not start interview recording");
     }
-  }, [questions, codingQuestions, handleRealTimeTranscription, addToTranscript, isSystemAudioOn]);
+  }, [questions, codingQuestions, processAudioWithWhisper, addToTranscript, isSystemAudioOn]);
 
   /**
    * End the interview and save recording

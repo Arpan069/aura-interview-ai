@@ -127,6 +127,8 @@ export const useRealTimeTranscription = (
     processAudioWithWhisper,
     transcriptionState,
     getTranscriptionStatus,
-    resetTranscription
+    resetTranscription,
+    // Export processAudioWithWhisper as handleRealTimeTranscription for backwards compatibility
+    handleRealTimeTranscription: processAudioWithWhisper
   };
 };

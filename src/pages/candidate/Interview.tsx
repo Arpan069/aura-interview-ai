@@ -11,6 +11,7 @@ import { useInterview } from "@/hooks/useInterview";
 import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OpenAIService } from "@/services/OpenAIService";
 
 /**
  * Main Interview Page Component
@@ -54,14 +55,13 @@ const InterviewPage = () => {
     // Check if OpenAI API key is configured
     fetch('/api/check-openai-key')
       .catch(() => {
-        // API route doesn't exist, check if we see related errors in console
-        const hasConsoleErrors = console.warn;
-        if (hasConsoleErrors) {
-          import('@/services/OpenAIService')
-            .then(module => {
-              const apiKeyConfigured = !!module.OPENAI_API_KEY || !!module.openAIService?.apiKey;
-              setApiKeyStatus(apiKeyConfigured ? 'present' : 'missing');
-            });
+        // API route doesn't exist, check by creating a test instance
+        const service = new OpenAIService();
+        // If we have a mock service, that means no API key was provided
+        if (service["mockService"]) {
+          setApiKeyStatus('missing');
+        } else {
+          setApiKeyStatus('present');
         }
       });
   }, []);
