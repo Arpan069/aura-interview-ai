@@ -4,7 +4,6 @@ Shared OpenAI client utilities
 """
 
 import os
-import openai
 from openai import OpenAI
 
 # Global OpenAI API key storage
@@ -19,7 +18,7 @@ def get_openai_client():
     
     if openai_api_key and client is None:
         try:
-            # Use the correct OpenAI client initialization
+            # Initialize client without any extra parameters that might cause issues
             client = OpenAI(api_key=openai_api_key)
         except Exception as e:
             print(f"Error initializing OpenAI client: {str(e)}")
@@ -35,7 +34,7 @@ def set_api_key(key):
     openai_api_key = key.strip()
     
     try:
-        # Initialize the client with the new API key
+        # Initialize the client with the new API key only
         client = OpenAI(api_key=openai_api_key)
         return client
     except Exception as e:
