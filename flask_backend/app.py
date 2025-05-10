@@ -42,6 +42,7 @@ def set_api_key():
     
     # Test if the API key works with a simple request
     try:
+        # Initialize the OpenAI client properly with just the API key
         client = openai.OpenAI(api_key=openai_api_key)
         # Make a simple test request to verify the API key
         response = client.chat.completions.create(
@@ -75,6 +76,7 @@ def transcribe_audio():
         return jsonify({"error": "OpenAI API key not configured"}), 401
     
     if client is None:
+        # Initialize the OpenAI client properly with just the API key
         client = openai.OpenAI(api_key=openai_api_key)
     
     data = request.json
@@ -116,6 +118,7 @@ def generate_response():
         return jsonify({"error": "OpenAI API key not configured"}), 401
     
     if client is None:
+        # Initialize the OpenAI client properly with just the API key
         client = openai.OpenAI(api_key=openai_api_key)
     
     data = request.json
@@ -165,7 +168,7 @@ def text_to_speech():
     if not openai_api_key:
         return jsonify({"error": "OpenAI API key not configured"}), 401
     
-    # Initialize the OpenAI client with just the API key, no extra parameters
+    # Initialize the OpenAI client properly with just the API key
     if client is None:
         client = openai.OpenAI(api_key=openai_api_key)
     
