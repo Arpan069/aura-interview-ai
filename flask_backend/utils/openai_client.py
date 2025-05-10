@@ -5,6 +5,7 @@ Shared OpenAI client utilities
 
 import os
 import openai
+from openai import OpenAI
 
 # Global OpenAI API key storage
 openai_api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -17,7 +18,12 @@ def get_openai_client():
     global client, openai_api_key
     
     if openai_api_key and client is None:
-        client = openai.OpenAI(api_key=openai_api_key)
+        try:
+            # Use the correct OpenAI client initialization
+            client = OpenAI(api_key=openai_api_key)
+        except Exception as e:
+            print(f"Error initializing OpenAI client: {str(e)}")
+            return None
     
     return client
 
@@ -28,10 +34,13 @@ def set_api_key(key):
     # Store the API key
     openai_api_key = key.strip()
     
-    # Initialize the client with the new API key
-    client = openai.OpenAI(api_key=openai_api_key)
-    
-    return client
+    try:
+        # Initialize the client with the new API key
+        client = OpenAI(api_key=openai_api_key)
+        return client
+    except Exception as e:
+        print(f"Error setting API key: {str(e)}")
+        return None
 
 def is_api_key_configured():
     """Check if API key is configured"""
