@@ -1,30 +1,33 @@
 
-import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useCallback } from "react";
 import { videoRecorder } from "@/utils/videoRecording";
 import { toast } from "@/hooks/use-toast";
-import { speakText } from "@/utils/speechUtils";
-import { useTranscript } from "@/hooks/useTranscript";
+import { useInterviewState } from "./interview/useInterviewState";
+import { useInterviewActions } from "./interview/useInterviewActions";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
 import { useAIResponse } from "@/hooks/useAIResponse";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useSpeechMonitor } from "./useSpeechMonitor";
+import { useInterviewInitialization } from "./useInterviewInitialization";
 
 /**
  * Custom hook for managing interview logic and state
  */
-export const useInterview = (isSystemAudioOn: boolean) => {
-  // Navigation hook for redirecting after interview
-  const navigate = useNavigate();
+const useInterview = (isSystemAudioOn: boolean) => {
+  // Use the interview state hook
+  const {
+    isInterviewStarted,
+    setIsInterviewStarted,
+    isRecording,
+    setIsRecording,
+    videoUrl,
+    setVideoUrl,
+    transcript,
+    addToTranscript,
+    navigateToDashboard
+  } = useInterviewState();
   
-  // Core interview state
-  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
-  
-  // Use custom hooks
-  const { transcript, addToTranscript } = useTranscript();
-  
+  // Use interview questions hook
   const { 
     currentQuestion, 
     setCurrentQuestion, 
@@ -37,6 +40,7 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     resetQuestions
   } = useInterviewQuestions(isSystemAudioOn, addToTranscript);
   
+  // Use AI response hook
   const { 
     isProcessingAI, 
     processWithOpenAI,
@@ -71,29 +75,51 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     clearTranscript: clearSpeechTranscript,
     isListening,
     browserSupportsSpeechRecognition,
-    resetAndRestartListening,
-    hasMicPermission
+    hasMicPermission,
+    resetAndRestartListening
   } = useSpeechToText(handleSpeechTranscript, isInterviewStarted);
 
-  // Monitor and restart speech recognition if it stops unexpectedly
-  useEffect(() => {
-    let checkInterval: NodeJS.Timeout | null = null;
-    
-    if (isInterviewStarted && !isProcessingAI) {
-      checkInterval = setInterval(() => {
-        if (!isListening && isSpeechRecognitionActive) {
-          console.log("Speech recognition appears to have stopped, restarting...");
-          resetAndRestartListening();
-        }
-      }, 5000); // Check every 5 seconds
-    }
-    
-    return () => {
-      if (checkInterval) {
-        clearInterval(checkInterval);
-      }
-    };
-  }, [isInterviewStarted, isListening, isSpeechRecognitionActive, isProcessingAI, resetAndRestartListening]);
+  // Use speech monitoring hook
+  const { 
+    isSpeechRecognitionActive, 
+    activateSpeechRecognition, 
+    deactivateSpeechRecognition 
+  } = useSpeechMonitor(
+    isInterviewStarted, 
+    isProcessingAI, 
+    isListening, 
+    resetAndRestartListening
+  );
+  
+  // Use interview initialization hook
+  const {
+    initializeInterview,
+    startInterviewRecording
+  } = useInterviewInitialization(
+    questions,
+    setCurrentQuestion,
+    resetConversation,
+    resetQuestions,
+    setIsInterviewStarted,
+    setIsRecording,
+    addToTranscript,
+    clearSpeechTranscript
+  );
+  
+  // Use interview actions hook
+  const {
+    endInterview,
+    speakFirstQuestion
+  } = useInterviewActions(
+    isSystemAudioOn,
+    questions,
+    isRecording,
+    setIsRecording,
+    setVideoUrl,
+    navigateToDashboard,
+    stopListening,
+    deactivateSpeechRecognition
+  );
 
   /**
    * Start the interview and recording
@@ -101,43 +127,23 @@ export const useInterview = (isSystemAudioOn: boolean) => {
    */
   const startInterview = useCallback(async (stream: MediaStream) => {
     try {
-      // Reset any previous state
-      resetConversation();
-      resetQuestions();
+      // Initialize interview with first question
+      const initialized = await initializeInterview();
       
-      // Set interview as started
-      setIsInterviewStarted(true);
-      
-      // Set the first question
-      setCurrentQuestion(questions[0]);
+      if (!initialized) return;
       
       // Start recording
-      await videoRecorder.startRecording(stream);
-      setIsRecording(true);
+      const recordingStarted = await startInterviewRecording(stream);
       
-      // Clear any previous transcript
-      clearSpeechTranscript();
+      if (!recordingStarted) return;
       
-      // Add initial AI question to transcript
-      addToTranscript("AI Interviewer", questions[0]);
+      // Speak the first question
+      await speakFirstQuestion();
       
-      // Delay speaking slightly to ensure UI updates first
-      setTimeout(() => {
-        // Simulate AI speaking the question
-        speakText(questions[0], isSystemAudioOn)
-          .then(() => {
-            // Start listening for speech after AI finishes speaking
-            startListening();
-            setIsSpeechRecognitionActive(true);
-            console.log("Started listening after AI spoke");
-          })
-          .catch(err => {
-            console.error("Error during AI speech:", err);
-            // Still start listening even if speech fails
-            startListening();
-            setIsSpeechRecognitionActive(true);
-          });
-      }, 500);
+      // Start listening for speech after AI finishes speaking
+      startListening();
+      activateSpeechRecognition();
+      console.log("Started listening after AI spoke");
       
       // Add a test message to verify the system is working
       console.log("Interview started successfully");
@@ -155,52 +161,12 @@ export const useInterview = (isSystemAudioOn: boolean) => {
       });
     }
   }, [
-    questions, 
-    addToTranscript, 
-    isSystemAudioOn, 
-    startListening, 
-    clearSpeechTranscript,
-    resetConversation,
-    resetQuestions,
-    setCurrentQuestion
+    initializeInterview,
+    startInterviewRecording,
+    speakFirstQuestion,
+    startListening,
+    activateSpeechRecognition
   ]);
-
-  /**
-   * End the interview and save recording
-   */
-  const endInterview = useCallback(async () => {
-    try {
-      // Stop speech recognition
-      stopListening();
-      setIsSpeechRecognitionActive(false);
-      
-      if (isRecording) {
-        // Stop recording and get the blob
-        const recordedBlob = await videoRecorder.stopRecording();
-        setIsRecording(false);
-        
-        // Save the recording and get the URL
-        const url = await videoRecorder.saveRecording(recordedBlob);
-        setVideoUrl(url);
-        
-        toast({
-          title: "Interview completed",
-          description: "Recording saved successfully",
-        });
-      }
-      
-      // Navigate back to dashboard
-      navigate("/candidate/dashboard");
-    } catch (error) {
-      console.error("Error ending interview:", error);
-      toast({
-        title: "Error",
-        description: "Failed to end interview properly",
-        variant: "destructive",
-      });
-      navigate("/candidate/dashboard");
-    }
-  }, [isRecording, navigate, stopListening]);
 
   // Clean up on component unmount
   useEffect(() => {
@@ -210,9 +176,9 @@ export const useInterview = (isSystemAudioOn: boolean) => {
         videoRecorder.cleanup();
       }
       stopListening();
-      setIsSpeechRecognitionActive(false);
+      deactivateSpeechRecognition();
     };
-  }, [isRecording, stopListening]);
+  }, [isRecording, stopListening, deactivateSpeechRecognition]);
 
   return {
     isInterviewStarted,
@@ -230,3 +196,5 @@ export const useInterview = (isSystemAudioOn: boolean) => {
     hasMicPermission
   };
 };
+
+export { useInterview };
