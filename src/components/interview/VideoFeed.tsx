@@ -1,12 +1,13 @@
 
-import React, { RefObject, useEffect, useState } from "react";
-import { UserCheck, MicOff, Mic, Volume2, VolumeX } from "lucide-react";
+import React, { useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import VideoControls from "./VideoControls";
+import { Volume2, VolumeX, Mic, MicOff, VideoIcon, VideoOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface VideoFeedProps {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement>;
   isVideoOn: boolean;
   isAudioOn: boolean;
   isSystemAudioOn: boolean;
@@ -15,14 +16,10 @@ interface VideoFeedProps {
   toggleSystemAudio: () => void;
   isRecording?: boolean;
   isListening?: boolean;
-  requestMediaPermissions?: () => Promise<void>;
   lastTranscribed?: string;
 }
 
-/**
- * VideoFeed component for displaying the candidate's video feed
- */
-const VideoFeed = ({
+const VideoFeed: React.FC<VideoFeedProps> = ({
   videoRef,
   isVideoOn,
   isAudioOn,
@@ -32,124 +29,102 @@ const VideoFeed = ({
   toggleSystemAudio,
   isRecording = false,
   isListening = false,
-  requestMediaPermissions,
   lastTranscribed = ""
-}: VideoFeedProps) => {
-  const [showTranscribed, setShowTranscribed] = useState(false);
-  
-  // Show the transcribed text briefly when it changes
-  useEffect(() => {
-    if (lastTranscribed) {
-      setShowTranscribed(true);
-      const timer = setTimeout(() => {
-        setShowTranscribed(false);
-      }, 5000); // Hide after 5 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [lastTranscribed]);
-  
+}) => {
   return (
-    <Card className="relative glass-morphism border-primary/10">
-      <CardContent className="p-2 aspect-video relative">
-        {/* Warning for audio being off during recording */}
-        {isRecording && !isAudioOn && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-background/90 p-4 rounded-md z-10 text-center">
-            <MicOff className="mx-auto mb-2 text-red-500" size={32} />
-            <p className="font-medium">Microphone is off</p>
-            <p className="text-sm text-muted-foreground">Your voice will not be recorded</p>
-            <Button 
-              onClick={toggleAudio} 
-              variant="default" 
-              size="sm" 
-              className="mt-2"
-            >
-              Enable Microphone
-            </Button>
-          </div>
-        )}
-        
-        {/* Main video element that displays the user's camera feed */}
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover rounded-md"
-        />
-        
-        {/* Live transcription overlay */}
-        {isRecording && showTranscribed && lastTranscribed && (
-          <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-background/80 backdrop-blur-sm p-3 rounded-lg max-w-[90%] text-center">
-            <p className="text-sm font-medium">{lastTranscribed}</p>
-          </div>
-        )}
-        
-        {/* Video controls for toggling camera, microphone, and system audio */}
-        <VideoControls
-          isVideoOn={isVideoOn}
-          isAudioOn={isAudioOn}
-          isSystemAudioOn={isSystemAudioOn}
-          toggleVideo={toggleVideo}
-          toggleAudio={toggleAudio}
-          toggleSystemAudio={toggleSystemAudio}
-        />
-        
-        {/* Video status indicators */}
-        <div className="absolute top-4 left-4 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
-          {isRecording ? (
-            <>
-              {/* Recording indicator */}
-              <span className="animate-pulse w-2 h-2 bg-red-500 rounded-full"></span>
-              <span className="text-xs font-medium text-red-500">REC</span>
-            </>
+    <Card className="relative overflow-hidden h-[calc(100vh-380px)]">
+      <CardContent className="p-0 h-full flex items-center justify-center relative">
+        {/* Camera feed */}
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+          {isVideoOn ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="h-full w-full object-cover"
+              style={{ transform: "scaleX(-1)" }} // Mirror effect
+            />
           ) : (
-            <>
-              {/* Live indicator when not recording */}
-              <span className="animate-pulse w-2 h-2 bg-green-500 rounded-full"></span>
-              <span className="text-xs font-medium">LIVE</span>
-            </>
+            <div className="flex flex-col items-center justify-center text-muted-foreground">
+              <Avatar className="h-20 w-20 mb-2">
+                <AvatarFallback>You</AvatarFallback>
+              </Avatar>
+              <p>Camera is off</p>
+            </div>
           )}
         </div>
         
-        {/* Speech recognition status */}
-        {isRecording && (
-          <div className="absolute top-4 left-24 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
-            {isListening ? (
-              <>
-                <Mic className="h-3 w-3 text-green-500" />
-                <span className="text-xs font-medium text-green-500">Listening</span>
-              </>
-            ) : (
-              <>
-                <MicOff className="h-3 w-3 text-yellow-500" />
-                <span className="text-xs font-medium text-yellow-500">Not listening</span>
-              </>
-            )}
-          </div>
-        )}
-        
-        {/* AI voice indicator */}
-        {isRecording && (
-          <div className="absolute top-4 right-16 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
-            {isSystemAudioOn ? (
-              <>
-                <Volume2 className="h-3 w-3 text-green-500" />
-                <span className="text-xs font-medium text-green-500">AI Voice On</span>
-              </>
-            ) : (
-              <>
-                <VolumeX className="h-3 w-3 text-yellow-500" />
-                <span className="text-xs font-medium text-yellow-500">AI Voice Off</span>
-              </>
-            )}
-          </div>
-        )}
-        
-        {/* User indicator */}
-        <div className="absolute top-4 right-4 flex items-center gap-2 p-1 px-2 bg-background/70 backdrop-blur-sm rounded-full">
-          <UserCheck size={14} className="text-green-500" />
-          <span className="text-xs font-medium">You</span>
+        {/* Controls overlay */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10">
+          <Button
+            size="sm"
+            variant={isVideoOn ? "default" : "outline"}
+            className="rounded-full w-10 h-10 p-0"
+            onClick={toggleVideo}
+          >
+            {isVideoOn ? <VideoIcon size={18} /> : <VideoOff size={18} />}
+          </Button>
+          
+          <Button
+            size="sm"
+            variant={isAudioOn ? "default" : "outline"}
+            className="rounded-full w-10 h-10 p-0"
+            onClick={toggleAudio}
+          >
+            {isAudioOn ? <Mic size={18} /> : <MicOff size={18} />}
+          </Button>
+          
+          <Button
+            size="sm"
+            variant={isSystemAudioOn ? "default" : "outline"}
+            className="rounded-full w-10 h-10 p-0"
+            onClick={toggleSystemAudio}
+          >
+            {isSystemAudioOn ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </Button>
         </div>
+        
+        {/* Recording indicator */}
+        {isRecording && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute top-4 right-4 flex items-center gap-2 bg-red-500/80 text-white px-3 py-1 rounded-full text-xs"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            REC
+          </motion.div>
+        )}
+        
+        {/* Listening indicator */}
+        {isListening && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-16 left-0 right-0 mx-auto w-fit bg-primary/80 text-white px-3 py-1 rounded-md text-xs flex items-center gap-1"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            Listening...
+          </motion.div>
+        )}
+        
+        {/* Transcription preview */}
+        {lastTranscribed && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 0.9, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute top-4 left-4 right-4 mx-auto max-w-md bg-background/80 backdrop-blur-sm p-2 rounded-md text-sm text-foreground border border-border"
+          >
+            {lastTranscribed}
+          </motion.div>
+        )}
       </CardContent>
     </Card>
   );

@@ -6,6 +6,19 @@ import { toast } from "@/hooks/use-toast";
 const openAIService = new OpenAIService();
 
 /**
+ * Global speaking state that components can subscribe to
+ */
+let isSpeakingCallback: ((speaking: boolean) => void) | null = null;
+
+/**
+ * Set callback for speaking state changes
+ * @param callback Function to call when speaking state changes
+ */
+export const setSpeakingStateCallback = (callback: ((speaking: boolean) => void) | null) => {
+  isSpeakingCallback = callback;
+};
+
+/**
  * Speak text using OpenAI TTS
  * @param text Text to speak
  * @param isSystemAudioOn Whether system audio is enabled
@@ -21,18 +34,33 @@ export const speakText = async (
   try {
     console.log("Speaking text:", text);
     
+    // Update speaking state to true
+    if (isSpeakingCallback) isSpeakingCallback(true);
+    
     // Generate speech using OpenAI TTS API
     const audioBlob = await openAIService.textToSpeech(text, options);
     
     // Play the audio
-    return await playAudio(audioBlob);
+    await playAudio(audioBlob);
+    
+    // Update speaking state to false when done
+    if (isSpeakingCallback) isSpeakingCallback(false);
+    
+    return Promise.resolve();
   } catch (error) {
     console.error("Error speaking text:", error);
     
     // Try browser's built-in speech synthesis as fallback
     console.log("Falling back to browser speech synthesis");
     try {
+      // Update speaking state to true
+      if (isSpeakingCallback) isSpeakingCallback(true);
+      
       await speakWithBrowserSynthesis(text);
+      
+      // Update speaking state to false when done
+      if (isSpeakingCallback) isSpeakingCallback(false);
+      
       return Promise.resolve();
     } catch (fallbackError) {
       console.error("Fallback speech synthesis failed:", fallbackError);
@@ -41,6 +69,10 @@ export const speakText = async (
         description: "Please check your OpenAI API key or try again later.",
         variant: "destructive",
       });
+      
+      // Make sure to reset speaking state
+      if (isSpeakingCallback) isSpeakingCallback(false);
+      
       return Promise.resolve();
     }
   }

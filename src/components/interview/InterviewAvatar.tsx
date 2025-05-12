@@ -31,8 +31,16 @@ const InterviewAvatar: React.FC<InterviewAvatarProps> = ({
   
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
-      {/* Background elements */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-background/60 z-0"></div>
+      {/* Enhanced background elements with a professional gradient and image */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-background/60 z-0">
+        <div 
+          className="absolute inset-0 opacity-20 bg-cover bg-center"
+          style={{ 
+            backgroundImage: "url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb')",
+            backgroundBlendMode: "overlay"
+          }}
+        />
+      </div>
       <div className="absolute left-0 right-0 bottom-0 h-32 bg-gradient-to-t from-background/80 to-transparent z-0"></div>
       
       {/* AI avatar container */}
@@ -46,7 +54,7 @@ const InterviewAvatar: React.FC<InterviewAvatarProps> = ({
           <div className="rounded-full bg-primary/10 p-1 mb-4">
             <div className={`rounded-full overflow-hidden border-4 ${
               isSpeaking && isSystemAudioOn ? 'border-primary animate-pulse' : 'border-primary/30'
-            }`} style={{ width: '250px', height: '250px' }}> {/* Increased from 200px to 250px */}
+            }`} style={{ width: '250px', height: '250px' }}> 
               <img 
                 src="/lovable-uploads/dd63a16d-398e-4187-a982-b19a91446630.png" 
                 alt="AI Interviewer Avatar" 

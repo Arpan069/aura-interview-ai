@@ -13,6 +13,7 @@ import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ApiKeySetup } from "@/components/interview/ApiKeySetup";
 import { backendService } from "@/services/api/BackendService";
+import { setSpeakingStateCallback } from "@/utils/speechUtils";
 
 /**
  * Main Interview Page Component
@@ -22,6 +23,7 @@ import { backendService } from "@/services/api/BackendService";
 const InterviewPage = () => {
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
+  const [aiIsSpeaking, setAiIsSpeaking] = useState(false);
   
   const { 
     videoRef, 
@@ -48,6 +50,12 @@ const InterviewPage = () => {
     browserSupportsSpeechRecognition,
     isListening
   } = useInterview(isSystemAudioOn);
+
+  // Register the speaking callback
+  useEffect(() => {
+    setSpeakingStateCallback(setAiIsSpeaking);
+    return () => setSpeakingStateCallback(null);
+  }, []);
 
   // Check backend status on component mount
   useEffect(() => {
