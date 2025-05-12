@@ -13,7 +13,7 @@ export class VideoStorage {
     try {
       // Generate a filename if not provided
       const name = fileName || `interview-${new Date().toISOString().replace(/[:.]/g, "-")}`;
-      const extension = VIDEO_STORAGE_CONFIG.format.container || "mp4";
+      const extension = VIDEO_STORAGE_CONFIG.fileFormat || "mp4";
       const fullPath = `${VIDEO_STORAGE_CONFIG.storagePath}/${name}.${extension}`;
       
       // Convert to MP4 if needed and the browser supports it
