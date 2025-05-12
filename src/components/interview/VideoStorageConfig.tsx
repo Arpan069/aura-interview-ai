@@ -1,75 +1,99 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { videoStorage } from "@/utils/storage/videoStorage";
+import { toast } from "sonner";
+import { VIDEO_STORAGE_CONFIG, setStoragePath, getStoragePath } from "@/config/storageConfig";
+import { Folder, Save, RefreshCw } from "lucide-react";
 
 interface VideoStorageConfigProps {
-  onClose?: () => void;
+  onSave?: (path: string) => void;
 }
 
-const VideoStorageConfig: React.FC<VideoStorageConfigProps> = ({ onClose }) => {
-  const [storagePath, setStoragePath] = useState(videoStorage.getStoragePath());
+const VideoStorageConfig: React.FC<VideoStorageConfigProps> = ({ onSave }) => {
+  const [storagePath, setStoragePathState] = useState(getStoragePath());
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSavePath = () => {
     try {
-      videoStorage.setStoragePath(storagePath);
-      toast({
-        title: "Storage path updated",
-        description: `Interview videos will be saved to "${storagePath}"`,
-      });
-      if (onClose) onClose();
+      setIsSaving(true);
+      // Update the global config
+      setStoragePath(storagePath);
+      
+      toast.success("Video storage path updated successfully");
+      
+      if (onSave) {
+        onSave(storagePath);
+      }
     } catch (error) {
-      toast({
-        title: "Failed to update path",
-        description: "Could not change the storage location",
-        variant: "destructive",
-      });
+      console.error("Failed to update storage path:", error);
+      toast.error("Failed to update storage path");
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const handleReset = () => {
+    const defaultPath = "interview_recordings";
+    setStoragePathState(defaultPath);
+    setStoragePath(defaultPath);
+    toast.info("Video storage path reset to default");
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Video Storage Settings</CardTitle>
-        <CardDescription>
-          Configure where interview recordings are saved
-        </CardDescription>
+    <Card className="shadow-md">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Folder className="h-5 w-5 text-muted-foreground" />
+          Video Storage Settings
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="storage-path" className="text-sm font-medium">
-            Storage Path
-          </label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="storage-path"
-              value={storagePath}
-              onChange={(e) => setStoragePath(e.target.value)}
-              placeholder="Path to save interview recordings"
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="storagePath" className="text-sm font-medium">
+              Video Storage Path
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id="storagePath"
+                value={storagePath}
+                onChange={(e) => setStoragePathState(e.target.value)}
+                placeholder="Enter path to save video recordings"
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Videos will be saved in MP4 format at this location
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSavePath}
+              disabled={isSaving}
               className="flex-1"
-            />
-            <Button variant="outline" type="button" className="shrink-0">
-              <FolderOpen className="h-4 w-4 mr-1" />
-              Browse
+              variant="default"
+            >
+              {isSaving ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Path
+                </>
+              )}
+            </Button>
+            <Button onClick={handleReset} variant="outline" className="flex-1">
+              Reset to Default
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Videos will be saved in MP4 format to this location
-          </p>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>
-          Save Changes
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

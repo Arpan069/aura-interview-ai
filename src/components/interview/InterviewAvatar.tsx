@@ -59,6 +59,10 @@ const InterviewAvatar: React.FC<InterviewAvatarProps> = ({
                 src="/lovable-uploads/dd63a16d-398e-4187-a982-b19a91446630.png" 
                 alt="AI Interviewer Avatar" 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "https://via.placeholder.com/250"; // Fallback image
+                }}
               />
             </div>
           </div>

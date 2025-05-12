@@ -1,7 +1,7 @@
 
 import { OpenAIService } from "@/services/OpenAIService";
 import { TextToSpeechOptions } from "@/services/OpenAIServiceTypes";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const openAIService = new OpenAIService();
 
@@ -64,11 +64,7 @@ export const speakText = async (
       return Promise.resolve();
     } catch (fallbackError) {
       console.error("Fallback speech synthesis failed:", fallbackError);
-      toast({
-        title: "Speech synthesis failed",
-        description: "Please check your OpenAI API key or try again later.",
-        variant: "destructive",
-      });
+      toast.error("Speech synthesis failed. Please check your OpenAI API key or try again later.");
       
       // Make sure to reset speaking state
       if (isSpeakingCallback) isSpeakingCallback(false);

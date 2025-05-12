@@ -3,35 +3,38 @@ import React, { useRef, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 
 interface AnimatedBackgroundProps {
-  mousePosition: { x: number; y: number };
+  mousePosition?: { x: number; y: number };
 }
 
-const AnimatedBackground: React.FC<AnimatedBackgroundProps> = () => {
+const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ mousePosition }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
-    // Remove the 'loop' attribute by setting it to false
+    // Ensure video loops properly
     if (videoRef.current) {
-      videoRef.current.loop = false;
+      videoRef.current.loop = true;
     }
   }, []);
   
   return (
     <div className="absolute inset-0 overflow-hidden w-full h-full z-0">
-      {/* Video background - removed 'loop' attribute */}
+      {/* Video background with loop enabled */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
+        loop
         className="absolute object-cover w-full h-full"
       >
         <source 
           src="/WhatsApp Video 2025-04-10 at 03.57.49_10143aa7 (online-video-cutter.com).mp4"
           type="video/mp4"
         />
+        {/* Fallback content */}
+        Your browser does not support the video tag.
       </video>
       
       {/* Gradient overlay */}
