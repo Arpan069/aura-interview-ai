@@ -107,7 +107,10 @@ export const useSpeechRecognition = () => {
   const resetAndRestart = useCallback(() => {
     console.log("Resetting and restarting speech recognition");
     SpeechRecognition.stopListening();
-    SpeechRecognition.resetTranscript();
+    
+    // Note: SpeechRecognition doesn't have resetTranscript directly
+    // The resetTranscript function comes from useSpeechRecognition hook
+    // We don't call resetTranscript here, but let useTranscriptProcessing handle it
     
     setTimeout(() => {
       startListening();
