@@ -12,9 +12,23 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ mousePosition }
   const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
-    // Ensure video loops properly
     if (videoRef.current) {
+      // Ensure video is set to loop and autoplay
       videoRef.current.loop = true;
+      
+      // Try to play the video automatically
+      const playPromise = videoRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log("Background video playing successfully");
+          })
+          .catch(error => {
+            console.warn("Auto-play prevented:", error);
+            // We'll add a play button or handle this gracefully
+          });
+      }
     }
   }, []);
   

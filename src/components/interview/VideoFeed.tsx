@@ -41,6 +41,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
               ref={videoRef}
               autoPlay
               playsInline
+              muted={!isAudioOn}
               className="h-full w-full object-cover"
               style={{ transform: "scaleX(-1)" }} // Mirror effect
             />

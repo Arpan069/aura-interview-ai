@@ -31,7 +31,7 @@ const InterviewAvatar: React.FC<InterviewAvatarProps> = ({
   
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
-      {/* Enhanced background elements with a professional gradient and image */}
+      {/* Enhanced background elements with a professional gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-background/60 z-0">
         <div 
           className="absolute inset-0 opacity-20 bg-cover bg-center"
