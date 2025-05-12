@@ -22,19 +22,29 @@ export class BrowserStorage {
       document.body.appendChild(a);
       a.click();
       
+      // Show a success message to the user
+      console.log(`Recording saved as ${filePath}`);
+      
       // Clean up
       setTimeout(() => {
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Don't revoke the URL yet as it might be needed for playback
       }, 100);
-      
-      console.log(`Recording saved to ${filePath}`);
       
       return url;
     } catch (error) {
       console.error("Failed to save recording in browser:", error);
       throw error;
     }
+  }
+  
+  /**
+   * Get a file from the browser's file system
+   * This is a helper method for potential future use with the File System Access API
+   */
+  async getRecording(filePath: string): Promise<Blob | null> {
+    console.warn("Browser storage does not support direct file access. Returning null.");
+    return null;
   }
 }
 

@@ -13,6 +13,7 @@ export const useSpeechRecognition = () => {
   const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
   const [startAttempts, setStartAttempts] = useState(0);
   const [lastStartTime, setLastStartTime] = useState<number | null>(null);
+  const [recognitionError, setRecognitionError] = useState<string | null>(null);
   
   // Check browser support
   const browserSupportsSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
@@ -56,14 +57,16 @@ export const useSpeechRecognition = () => {
     setStartAttempts(prev => prev + 1);
     
     try {
-      console.log("Starting speech recognition...");
+      console.log("Starting speech recognition with continuous mode...");
       // Use continuous mode with long sessions to avoid breaks
       await SpeechRecognition.startListening({ 
         continuous: true, 
         language: 'en-US',
+        interimResults: true, // Get results as the user speaks
       });
       
       setIsRecognitionActive(true);
+      setRecognitionError(null);
       console.log('Started listening for speech');
       
       toast({
@@ -75,6 +78,7 @@ export const useSpeechRecognition = () => {
       setStartAttempts(0);
     } catch (error) {
       console.error('Error starting speech recognition:', error);
+      setRecognitionError(error instanceof Error ? error.message : String(error));
       
       // Check for permission issues
       if (!hasMicPermission) {
@@ -96,6 +100,19 @@ export const useSpeechRecognition = () => {
       setIsRecognitionActive(false);
     }
   }, [isRecognitionActive]);
+  
+  /**
+   * Reset and restart speech recognition (useful for recovering from errors)
+   */
+  const resetAndRestart = useCallback(() => {
+    console.log("Resetting and restarting speech recognition");
+    SpeechRecognition.stopListening();
+    SpeechRecognition.resetTranscript();
+    
+    setTimeout(() => {
+      startListening();
+    }, 1000);
+  }, [startListening]);
   
   /**
    * Check microphone permission
@@ -121,14 +138,28 @@ export const useSpeechRecognition = () => {
   useEffect(() => {
     checkMicPermission();
   }, [checkMicPermission]);
+  
+  // Add auto-recovery mechanism if speech recognition stops unexpectedly
+  useEffect(() => {
+    const recoveryInterval = setInterval(() => {
+      if (isRecognitionActive && !SpeechRecognition.browserSupportsSpeechRecognition()) {
+        console.warn("Speech recognition appears to have stopped, attempting to restart");
+        resetAndRestart();
+      }
+    }, 10000); // Check every 10 seconds
+    
+    return () => clearInterval(recoveryInterval);
+  }, [isRecognitionActive, resetAndRestart]);
 
   return {
     isRecognitionActive,
     browserSupportsSpeechRecognition,
     hasMicPermission,
     startAttempts,
+    recognitionError,
     startListening,
     stopListening,
+    resetAndRestart,
     checkMicPermission
   };
 };

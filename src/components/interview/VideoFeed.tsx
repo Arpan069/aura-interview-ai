@@ -74,7 +74,6 @@ const VideoFeed = ({
           ref={videoRef}
           autoPlay
           playsInline
-          muted
           className="w-full h-full object-cover rounded-md"
         />
         

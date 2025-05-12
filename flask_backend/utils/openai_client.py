@@ -18,8 +18,10 @@ def get_openai_client():
     
     if openai_api_key and client is None:
         try:
-            # Initialize client without any extra parameters that might cause issues
+            # Initialize client with just the API key, no additional parameters
+            # that might cause compatibility issues
             client = OpenAI(api_key=openai_api_key)
+            return client
         except Exception as e:
             print(f"Error initializing OpenAI client: {str(e)}")
             return None
@@ -34,7 +36,7 @@ def set_api_key(key):
     openai_api_key = key.strip()
     
     try:
-        # Initialize the client with the new API key only
+        # Initialize the client with just the API key
         client = OpenAI(api_key=openai_api_key)
         return client
     except Exception as e:
