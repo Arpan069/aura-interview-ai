@@ -3,8 +3,8 @@ import { useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 import { videoRecorder } from "@/utils/videoRecording";
 import { speakText } from "@/utils/speechUtils";
-import { backendService } from "@/services/api/BackendService"; // Import backendService
-import type { TranscriptItem } from "@/types/interview"; // Import TranscriptItem
+import { backendService } from "@/services/api/BackendService";
+import type { TranscriptItem } from "@/types/interview";
 
 /**
  * Helper function to format transcript items into a single string.
@@ -44,7 +44,6 @@ export function useInterviewActions(
         setIsRecording(false);
         
         // Save the recording and get the URL
-        // videoStorage.saveRecording will use the path from VIDEO_STORAGE_CONFIG
         videoUrl = await videoRecorder.saveRecording(recordedBlob);
         setVideoUrl(videoUrl); // Update local state if needed for UI
         
@@ -56,16 +55,19 @@ export function useInterviewActions(
       
       if (videoUrl && currentTranscript && currentTranscript.length > 0) {
         const transcriptText = formatTranscriptToString(currentTranscript);
+        
         try {
           // Call backend to save details and trigger analysis
-          // Title can be more dynamic if needed, e.g., based on user or first question
           const interviewTitle = questions.length > 0 ? `Interview about "${questions[0].substring(0, 50)}..."` : "AI Practice Interview";
           
-          await backendService.saveCompletedInterview({
+          const result = await backendService.saveCompletedInterview({
             video_url: videoUrl,
             transcript_text: transcriptText,
             title: interviewTitle 
           });
+          
+          console.log("Interview saved to database:", result);
+          
           toast({
             title: "Interview details saved!",
             description: "Your interview and analysis have been stored.",
@@ -104,8 +106,7 @@ export function useInterviewActions(
     deactivateSpeechRecognition,
     setIsRecording,
     setVideoUrl,
-    questions, // Added questions for title generation
-    isSystemAudioOn // isSystemAudioOn was a param but not used in endInterview, kept for consistency with hook params
+    questions
   ]);
 
   /**
@@ -135,4 +136,3 @@ export function useInterviewActions(
     speakFirstQuestion
   };
 }
-

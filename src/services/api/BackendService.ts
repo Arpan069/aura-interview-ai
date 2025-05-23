@@ -109,7 +109,6 @@ export class BackendService {
    */
   async textToSpeech(text: string, options: TextToSpeechOptions = {}): Promise<Blob> {
     const payload = { text, ...options };
-    // Corrected: responseType should be 'blob'
     return this.requestHelper.post<Blob>('/text-to-speech', payload, true, false, 'blob'); 
   }
 
@@ -117,7 +116,15 @@ export class BackendService {
    * Save completed interview details (video URL, transcript, trigger analysis)
    */
   async saveCompletedInterview(payload: CompleteInterviewPayload): Promise<InterviewDetail> {
-    return this.requestHelper.post<InterviewDetail>('/interviews/complete', payload, true);
+    console.log("Saving completed interview:", payload);
+    try {
+      const result = await this.requestHelper.post<InterviewDetail>('/interviews/complete', payload, true);
+      console.log("Interview saved successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error saving interview:", error);
+      throw error;
+    }
   }
   
    /**
@@ -133,16 +140,13 @@ export class BackendService {
   }
 
   public async logout(): Promise<void> {
-    // Inform the backend if necessary (e.g., to invalidate tokens)
-    // For now, just clear local storage
     try {
-        await this.requestHelper.post<void>('/auth/logout', {}, true);
+      await this.requestHelper.post<void>('/auth/logout', {}, true);
     } catch (error) {
-        console.warn("Failed to notify backend of logout, or no logout endpoint configured:", error);
+      console.warn("Failed to notify backend of logout, or no logout endpoint configured:", error);
     } finally {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        // Optionally, redirect or update UI state
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
     }
   }
 }

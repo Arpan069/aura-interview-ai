@@ -2,11 +2,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, X, Circle, Mic, MessageSquare } from "lucide-react";
+import type { Transcript } from "@/types/transcript";
+import type { TranscriptItem } from "@/types/interview"; 
 
 interface InterviewHeaderProps {
-  onEndInterview: () => void;
+  onEndInterview: (transcript: TranscriptItem[]) => void;
   isRecording?: boolean;
   isProcessingAI?: boolean;
+  transcript: Transcript[];
 }
 
 /**
@@ -15,17 +18,31 @@ interface InterviewHeaderProps {
  * @param onEndInterview - Function to handle ending the interview
  * @param isRecording - Whether the interview is currently being recorded
  * @param isProcessingAI - Whether the AI is currently processing a response
+ * @param transcript - The current interview transcript
  */
 const InterviewHeader = ({ 
   onEndInterview, 
   isRecording, 
-  isProcessingAI 
+  isProcessingAI,
+  transcript
 }: InterviewHeaderProps) => {
+  
+  const handleEndInterview = () => {
+    // Convert Transcript[] to TranscriptItem[]
+    const formattedTranscript: TranscriptItem[] = transcript.map(item => ({
+      speaker: item.speaker,
+      text: item.text,
+      timestamp: item.timestamp.toISOString(),
+    }));
+    
+    onEndInterview(formattedTranscript);
+  };
+  
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         {/* Back button - returns to dashboard */}
-        <Button variant="ghost" onClick={onEndInterview} className="flex items-center gap-1">
+        <Button variant="ghost" onClick={handleEndInterview} className="flex items-center gap-1">
           <ChevronLeft className="h-4 w-4" />
           Back to Dashboard
         </Button>
@@ -57,7 +74,7 @@ const InterviewHeader = ({
         {/* End button to finish the interview */}
         <Button 
           variant="ghost" 
-          onClick={onEndInterview}
+          onClick={handleEndInterview}
           className="text-destructive"
         >
           <X className="h-4 w-4 mr-1" />

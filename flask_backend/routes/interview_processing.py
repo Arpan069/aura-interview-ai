@@ -27,29 +27,33 @@ def complete_interview():
         # Ensure the user is a candidate
         user = User.query.get(current_user_id)
         if not user or user.user_type != 'candidate':
-             # If using polymorphic ID, candidate_id is user_id for candidates
+            # If using polymorphic ID, candidate_id is user_id for candidates
             return jsonify({"msg": "User is not a candidate or not found"}), 403
 
         candidate_id = user.id
 
         # Analyze transcript with OpenAI
         analysis = analyze_transcript_with_openai(transcript_text)
+        
+        print(f"Transcript analysis result: {analysis}")
 
         # Calculate average score
         total_score = 0
         num_scores = 0
+        
         if analysis.get('language_score', {}).get('score') is not None:
             total_score += analysis['language_score']['score']
             num_scores += 1
+            
         if analysis.get('personality_score', {}).get('score') is not None:
             total_score += analysis['personality_score']['score']
             num_scores += 1
+            
         if analysis.get('accuracy_score', {}).get('score') is not None:
             total_score += analysis['accuracy_score']['score']
             num_scores += 1
         
         average_score = total_score / num_scores if num_scores > 0 else None
-
 
         new_interview = Interview(
             title=title,
@@ -73,6 +77,8 @@ def complete_interview():
 
         db.session.add(new_interview)
         db.session.commit()
+        
+        print(f"Interview saved to database with ID: {new_interview.id}")
 
         return jsonify(new_interview.to_dict()), 201
 
@@ -82,4 +88,3 @@ def complete_interview():
         db.session.rollback()
         print(f"Error completing interview: {e}") # Log the full error
         return jsonify({"msg": "Failed to complete interview", "error": str(e)}), 500
-

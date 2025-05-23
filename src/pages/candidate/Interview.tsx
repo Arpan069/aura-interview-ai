@@ -1,19 +1,16 @@
+
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import InterviewHeader from "@/components/interview/InterviewHeader";
-import InterviewAvatar from "@/components/interview/InterviewAvatar";
-import VideoFeed from "@/components/interview/VideoFeed";
-import QuestionCard from "@/components/interview/QuestionCard";
-import InterviewTabs from "@/components/interview/InterviewTabs";
+import InterviewContent from "@/components/interview/InterviewContent";
 import { useInterviewMedia } from "@/hooks/useInterviewMedia";
 import { useInterview } from "@/hooks/useInterview";
 import { Card, CardContent } from "@/components/ui/card";
 import EnhancedBackground from "@/components/EnhancedBackground";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ApiKeySetup } from "@/components/interview/ApiKeySetup";
-import type { TranscriptItem } from "@/types/interview"; 
-import type { Transcript } from "@/types/transcript"; // To properly type the state
-import { backendService } from "@/services/api/BackendService"; // Added this import
+import type { TranscriptItem } from "@/types/interview";
+import { backendService } from "@/services/api/BackendService";
 
 const InterviewPage = () => {
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
@@ -90,8 +87,6 @@ const InterviewPage = () => {
       }
 
       // Check again if mediaStream became available
-      // It's possible requestMediaPermissions updates it asynchronously
-      // This check is a bit redundant if useInterviewMedia guarantees update, but safe
       if (!mediaStream && !videoRef.current?.srcObject) {
          console.error("Media stream unavailable even after permission request.");
          // Try to get it one more time if not available - defensive
@@ -123,22 +118,12 @@ const InterviewPage = () => {
       }
     }
 
-
     if (!browserSupportsSpeechRecognition) {
       console.warn("Speech recognition may not work in this browser.");
     }
 
     const clonedStream = streamToUse.clone();
     await startInterview(clonedStream);
-  };
-
-  const handleEndInterview = () => {
-    // Convert Transcript[] to TranscriptItem[]
-    const formattedTranscript: TranscriptItem[] = transcript.map(item => ({
-      ...item,
-      timestamp: item.timestamp.toISOString(), 
-    }));
-    endInterview(formattedTranscript);
   };
 
   if (backendReady === true && apiKeyConfigured === false) {
@@ -199,63 +184,32 @@ const InterviewPage = () => {
         </div>
 
         <InterviewHeader
-          onEndInterview={handleEndInterview} 
+          onEndInterview={endInterview} 
           isRecording={isRecording}
           isProcessingAI={isProcessingAI}
+          transcript={transcript}
         />
 
-        <main className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-auto container mx-auto">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full md:w-1/2 flex flex-col gap-4"
-          >
-            <Card className="relative overflow-hidden glass-morphism border-primary/10 h-[calc(100vh-300px)]">
-              <CardContent className="p-0 h-full flex flex-col justify-center items-center">
-                <InterviewAvatar
-                  isInterviewStarted={isInterviewStarted}
-                  currentQuestion={currentQuestion}
-                  isSystemAudioOn={isSystemAudioOn}
-                  isSpeaking={isAISpeaking}
-                  isListening={isListening && !isAISpeaking}
-                />
-              </CardContent>
-            </Card>
-
-            <QuestionCard
-              isInterviewStarted={isInterviewStarted}
-              currentQuestion={currentQuestion}
-              startInterview={handleStartInterview}
-              isLoading={isLoading}
-            />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full md:w-1/2 flex flex-col gap-4"
-          >
-            <VideoFeed
-              videoRef={videoRef}
-              isVideoOn={isVideoOn}
-              isAudioOn={isAudioOn}
-              isSystemAudioOn={isSystemAudioOn}
-              toggleVideo={toggleVideo}
-              toggleAudio={toggleAudio}
-              toggleSystemAudio={toggleSystemAudio}
-              isRecording={isRecording}
-              isListening={isListening}
-              lastTranscribed={lastTranscribed}
-            />
-
-            <InterviewTabs
-              transcript={transcript} 
-              codingQuestion={currentCodingQuestion}
-            />
-          </motion.div>
-        </main>
+        <InterviewContent
+          isInterviewStarted={isInterviewStarted}
+          isRecording={isRecording}
+          isProcessingAI={isProcessingAI}
+          currentQuestion={currentQuestion}
+          transcript={transcript}
+          isAudioOn={isAudioOn}
+          isVideoOn={isVideoOn}
+          isSystemAudioOn={isSystemAudioOn}
+          toggleVideo={toggleVideo}
+          toggleAudio={toggleAudio}
+          toggleSystemAudio={toggleSystemAudio}
+          videoRef={videoRef}
+          handleStartInterview={handleStartInterview}
+          isLoading={isLoading}
+          currentCodingQuestion={currentCodingQuestion}
+          isListening={isListening}
+          isAISpeaking={isAISpeaking}
+          lastTranscribed={lastTranscribed}
+        />
       </div>
     </EnhancedBackground>
   );
