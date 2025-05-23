@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Toaster } from "sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { AuthProvider, ProtectedRoute } from './hooks/useAuth';
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
@@ -33,31 +34,53 @@ const App = () => (
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              
-              {/* Candidate routes */}
-              <Route path="/candidate/login" element={<CandidateLogin />} />
-              <Route path="/candidate/register" element={<CandidateRegister />} />
-              <Route path="/candidate/verify-otp" element={<CandidateVerifyOTP />} />
-              <Route path="/candidate/dashboard" element={<CandidateDashboard />} />
-              <Route path="/candidate/profile" element={<CandidateProfile />} />
-              <Route path="/candidate/interview" element={<CandidateInterview />} />
-              
-              {/* Employer routes */}
-              <Route path="/employer/login" element={<EmployerLogin />} />
-              <Route path="/employer/register" element={<EmployerRegister />} />
-              <Route path="/employer/dashboard" element={<EmployerDashboard />} />
-              <Route path="/employer/profile" element={<EmployerProfile />} />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AuthProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                
+                {/* Candidate routes */}
+                <Route path="/candidate/login" element={<CandidateLogin />} />
+                <Route path="/candidate/register" element={<CandidateRegister />} />
+                <Route path="/candidate/verify-otp" element={<CandidateVerifyOTP />} />
+                <Route path="/candidate/dashboard" element={
+                  <ProtectedRoute userTypes={['candidate']}>
+                    <CandidateDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/candidate/profile" element={
+                  <ProtectedRoute userTypes={['candidate']}>
+                    <CandidateProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/candidate/interview" element={
+                  <ProtectedRoute userTypes={['candidate']}>
+                    <CandidateInterview />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Employer routes */}
+                <Route path="/employer/login" element={<EmployerLogin />} />
+                <Route path="/employer/register" element={<EmployerRegister />} />
+                <Route path="/employer/dashboard" element={
+                  <ProtectedRoute userTypes={['employer']}>
+                    <EmployerDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/employer/profile" element={
+                  <ProtectedRoute userTypes={['employer']}>
+                    <EmployerProfile />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Catch-all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
           </BrowserRouter>
-          <Toaster position="bottom-right" />
+          <Sonner />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

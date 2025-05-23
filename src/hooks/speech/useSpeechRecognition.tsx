@@ -2,7 +2,7 @@
 import "regenerator-runtime/runtime";
 import { useState, useCallback, useEffect } from 'react';
 import SpeechRecognition from 'react-speech-recognition';
-import { requestAudioPermission } from "@/utils/speechUtils";
+import { requestAudioPermission, getIsSpeaking } from "@/utils/speechUtils";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -13,7 +13,6 @@ export const useSpeechRecognition = () => {
   const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
   const [startAttempts, setStartAttempts] = useState(0);
   const [lastStartTime, setLastStartTime] = useState<number | null>(null);
-  const [recognitionError, setRecognitionError] = useState<string | null>(null);
   
   // Check browser support
   const browserSupportsSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
@@ -22,6 +21,12 @@ export const useSpeechRecognition = () => {
    * Start speech recognition with retry logic
    */
   const startListening = useCallback(async () => {
+    // Don't start listening if the AI is currently speaking
+    if (getIsSpeaking()) {
+      console.log("AI is currently speaking, not starting speech recognition");
+      return;
+    }
+
     if (!browserSupportsSpeechRecognition) {
       console.error('Browser does not support speech recognition');
       toast({
@@ -57,28 +62,20 @@ export const useSpeechRecognition = () => {
     setStartAttempts(prev => prev + 1);
     
     try {
-      console.log("Starting speech recognition with continuous mode...");
+      console.log("Starting speech recognition...");
       // Use continuous mode with long sessions to avoid breaks
       await SpeechRecognition.startListening({ 
         continuous: true, 
         language: 'en-US',
-        interimResults: true, // Get results as the user speaks
       });
       
       setIsRecognitionActive(true);
-      setRecognitionError(null);
       console.log('Started listening for speech');
-      
-      toast({
-        title: "Listening started",
-        description: "Speak clearly to begin transcription",
-      });
       
       // Reset attempt counter on successful start
       setStartAttempts(0);
     } catch (error) {
       console.error('Error starting speech recognition:', error);
-      setRecognitionError(error instanceof Error ? error.message : String(error));
       
       // Check for permission issues
       if (!hasMicPermission) {
@@ -100,22 +97,6 @@ export const useSpeechRecognition = () => {
       setIsRecognitionActive(false);
     }
   }, [isRecognitionActive]);
-  
-  /**
-   * Reset and restart speech recognition (useful for recovering from errors)
-   */
-  const resetAndRestart = useCallback(() => {
-    console.log("Resetting and restarting speech recognition");
-    SpeechRecognition.stopListening();
-    
-    // Note: SpeechRecognition doesn't have resetTranscript directly
-    // The resetTranscript function comes from useSpeechRecognition hook
-    // We don't call resetTranscript here, but let useTranscriptProcessing handle it
-    
-    setTimeout(() => {
-      startListening();
-    }, 1000);
-  }, [startListening]);
   
   /**
    * Check microphone permission
@@ -141,28 +122,14 @@ export const useSpeechRecognition = () => {
   useEffect(() => {
     checkMicPermission();
   }, [checkMicPermission]);
-  
-  // Add auto-recovery mechanism if speech recognition stops unexpectedly
-  useEffect(() => {
-    const recoveryInterval = setInterval(() => {
-      if (isRecognitionActive && !SpeechRecognition.browserSupportsSpeechRecognition()) {
-        console.warn("Speech recognition appears to have stopped, attempting to restart");
-        resetAndRestart();
-      }
-    }, 10000); // Check every 10 seconds
-    
-    return () => clearInterval(recoveryInterval);
-  }, [isRecognitionActive, resetAndRestart]);
 
   return {
     isRecognitionActive,
     browserSupportsSpeechRecognition,
     hasMicPermission,
     startAttempts,
-    recognitionError,
     startListening,
     stopListening,
-    resetAndRestart,
     checkMicPermission
   };
 };

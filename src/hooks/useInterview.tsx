@@ -1,13 +1,14 @@
-
-import { useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { videoRecorder } from "@/utils/videoRecording";
 import { toast } from "@/hooks/use-toast";
 import { useInterviewState } from "./interview/useInterviewState";
 import { useInterviewActions } from "./interview/useInterviewActions";
 import { useInterviewQuestions } from "@/hooks/useInterviewQuestions";
+import { useAIResponse } from "@/hooks/useAIResponse";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useSpeechMonitor } from "./useSpeechMonitor";
 import { useInterviewInitialization } from "./useInterviewInitialization";
-import { useInterviewSpeech } from "./interview/useInterviewSpeech";
-import { useEffect } from "react";
+import { getIsSpeaking } from "@/utils/speechUtils";
 
 /**
  * Custom hook for managing interview logic and state
@@ -39,24 +40,55 @@ const useInterview = (isSystemAudioOn: boolean) => {
     resetQuestions
   } = useInterviewQuestions(isSystemAudioOn, addToTranscript);
   
-  // Use interview speech hook
-  const {
-    isProcessingAI,
+  // Use AI response hook
+  const { 
+    isProcessingAI, 
+    processWithOpenAI,
+    resetConversation 
+  } = useAIResponse(
+    isSystemAudioOn, 
+    addToTranscript, 
+    advanceToNextQuestion
+  );
+  
+  // Handler for new speech transcription
+  const handleSpeechTranscript = useCallback((text: string) => {
+    if (!text || text.trim().length < 2) return;
+    
+    console.log("Speech transcription received:", text);
+    addToTranscript("You", text);
+    
+    // Process with AI for meaningful content (2+ words)
+    if (text.trim().split(/\s+/).length >= 2) {
+      // Add a small delay to allow for transcript to be displayed
+      setTimeout(() => {
+        processWithOpenAI(text, currentQuestion)
+          .catch(err => console.error("Error processing speech:", err));
+      }, 500);
+    }
+  }, [addToTranscript, processWithOpenAI, currentQuestion]);
+  
+  // Use speech recognition with the enhanced handler
+  const { 
     startListening,
     stopListening,
-    clearSpeechTranscript,
+    clearTranscript: clearSpeechTranscript,
     isListening,
     browserSupportsSpeechRecognition,
     hasMicPermission,
-    activateSpeechRecognition,
-    deactivateSpeechRecognition,
-    resetConversation
-  } = useInterviewSpeech(
-    isInterviewStarted,
-    isSystemAudioOn,
-    currentQuestion,
-    addToTranscript,
-    advanceToNextQuestion
+    resetAndRestartListening
+  } = useSpeechToText(handleSpeechTranscript, isInterviewStarted);
+
+  // Use speech monitoring hook
+  const { 
+    isSpeechRecognitionActive, 
+    activateSpeechRecognition, 
+    deactivateSpeechRecognition 
+  } = useSpeechMonitor(
+    isInterviewStarted, 
+    isProcessingAI, 
+    isListening, 
+    resetAndRestartListening
   );
   
   // Use interview initialization hook
@@ -76,7 +108,7 @@ const useInterview = (isSystemAudioOn: boolean) => {
   
   // Use interview actions hook
   const {
-    endInterview,
+    endInterview: endInterviewAction,
     speakFirstQuestion
   } = useInterviewActions(
     isSystemAudioOn,
@@ -88,6 +120,21 @@ const useInterview = (isSystemAudioOn: boolean) => {
     stopListening,
     deactivateSpeechRecognition
   );
+
+  // Track AI speaking state
+  const [isAISpeaking, setIsAISpeaking] = useState(false);
+  
+  // Effect to monitor AI speaking state
+  useEffect(() => {
+    const checkSpeakingInterval = setInterval(() => {
+      const speaking = getIsSpeaking();
+      if (speaking !== isAISpeaking) {
+        setIsAISpeaking(speaking);
+      }
+    }, 200);
+    
+    return () => clearInterval(checkSpeakingInterval);
+  }, [isAISpeaking]);
 
   /**
    * Start the interview and recording
@@ -154,12 +201,13 @@ const useInterview = (isSystemAudioOn: boolean) => {
     currentQuestion,
     transcript,
     startInterview,
-    endInterview,
+    endInterview: endInterviewAction,
     currentCodingQuestion,
     showCodingChallenge,
     videoUrl,
     isProcessingAI,
     isListening,
+    isAISpeaking,
     browserSupportsSpeechRecognition,
     hasMicPermission
   };

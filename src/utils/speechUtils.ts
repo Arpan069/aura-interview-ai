@@ -1,21 +1,17 @@
-
 import { OpenAIService } from "@/services/OpenAIService";
 import { TextToSpeechOptions } from "@/services/OpenAIServiceTypes";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 const openAIService = new OpenAIService();
 
-/**
- * Global speaking state that components can subscribe to
- */
-let isSpeakingCallback: ((speaking: boolean) => void) | null = null;
+// Global variable to track speaking state
+let isSpeaking = false;
 
 /**
- * Set callback for speaking state changes
- * @param callback Function to call when speaking state changes
+ * Check if AI is currently speaking
  */
-export const setSpeakingStateCallback = (callback: ((speaking: boolean) => void) | null) => {
-  isSpeakingCallback = callback;
+export const getIsSpeaking = (): boolean => {
+  return isSpeaking;
 };
 
 /**
@@ -33,9 +29,11 @@ export const speakText = async (
   
   try {
     console.log("Speaking text:", text);
+    isSpeaking = true;
     
-    // Update speaking state to true
-    if (isSpeakingCallback) isSpeakingCallback(true);
+    // Calculate approximate speaking duration (5 words per second)
+    const wordCount = text.split(/\s+/).length;
+    const approximateDuration = (wordCount / 5) * 1000;
     
     // Generate speech using OpenAI TTS API
     const audioBlob = await openAIService.textToSpeech(text, options);
@@ -43,9 +41,10 @@ export const speakText = async (
     // Play the audio
     await playAudio(audioBlob);
     
-    // Update speaking state to false when done
-    if (isSpeakingCallback) isSpeakingCallback(false);
+    // Add a small delay to ensure speech is complete
+    await new Promise(resolve => setTimeout(resolve, 500));
     
+    isSpeaking = false;
     return Promise.resolve();
   } catch (error) {
     console.error("Error speaking text:", error);
@@ -53,22 +52,18 @@ export const speakText = async (
     // Try browser's built-in speech synthesis as fallback
     console.log("Falling back to browser speech synthesis");
     try {
-      // Update speaking state to true
-      if (isSpeakingCallback) isSpeakingCallback(true);
-      
+      isSpeaking = true;
       await speakWithBrowserSynthesis(text);
-      
-      // Update speaking state to false when done
-      if (isSpeakingCallback) isSpeakingCallback(false);
-      
+      isSpeaking = false;
       return Promise.resolve();
     } catch (fallbackError) {
       console.error("Fallback speech synthesis failed:", fallbackError);
-      toast.error("Speech synthesis failed. Please check your OpenAI API key or try again later.");
-      
-      // Make sure to reset speaking state
-      if (isSpeakingCallback) isSpeakingCallback(false);
-      
+      toast({
+        title: "Speech synthesis failed",
+        description: "Please check your OpenAI API key or try again later.",
+        variant: "destructive",
+      });
+      isSpeaking = false;
       return Promise.resolve();
     }
   }
@@ -87,11 +82,13 @@ export const playAudio = async (audioBlob: Blob): Promise<void> => {
       // Set up event handlers
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
+        isSpeaking = false;
         resolve();
       };
       
       audio.onerror = (err) => {
         URL.revokeObjectURL(audioUrl);
+        isSpeaking = false;
         reject(new Error(`Audio playback error: ${err}`));
       };
       
@@ -99,9 +96,11 @@ export const playAudio = async (audioBlob: Blob): Promise<void> => {
       audio.play().catch(error => {
         console.error("Audio play error:", error);
         URL.revokeObjectURL(audioUrl);
+        isSpeaking = false;
         reject(error);
       });
     } catch (error) {
+      isSpeaking = false;
       reject(error);
     }
   });

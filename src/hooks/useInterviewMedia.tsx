@@ -28,15 +28,6 @@ export const useInterviewMedia = () => {
           
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            try {
-              // Ensure the video starts playing
-              await videoRef.current.play();
-              console.log("Video playback started successfully");
-            } catch (playError) {
-              console.error("Error starting video playback:", playError);
-            }
-          } else {
-            console.warn("Video ref is not available");
           }
 
           // Check specifically if audio tracks are available
@@ -59,11 +50,6 @@ export const useInterviewMedia = () => {
         
         if (error instanceof DOMException && error.name === "NotAllowedError") {
           console.log("User denied permission for media devices");
-          toast({
-            title: "Permission Denied",
-            description: "Please allow camera and microphone access to continue with the interview.",
-            variant: "destructive",
-          });
         }
       }
     };
@@ -163,12 +149,6 @@ export const useInterviewMedia = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        try {
-          await videoRef.current.play();
-          console.log("Video playback started after permissions request");
-        } catch (playError) {
-          console.error("Error starting video playback after permissions:", playError);
-        }
       }
       
       setIsVideoOn(true);

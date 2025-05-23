@@ -27,28 +27,16 @@ export class MediaRecorder {
         this.recordedChunks = [];
         
         // Determine the best supported mime type
-        // Try MP4 with H.264 first, fall back to WebM with VP9, then VP8
-        let mimeType = 'video/mp4';
-        const supportedTypes = [
-          'video/mp4;codecs=h264,aac',
-          'video/mp4',
-          'video/webm;codecs=vp9,opus',
-          'video/webm;codecs=vp8,opus',
-          'video/webm'
-        ];
+        const mimeType = options.mimeType || 'video/webm;codecs=vp9';
         
-        // Use the first supported mimetype in our preference list
-        mimeType = supportedTypes.find(type => 
-          globalThis.MediaRecorder.isTypeSupported(type)
-        ) || 'video/webm';
-        
-        console.log(`Using MIME type: ${mimeType} for recording`);
+        if (!globalThis.MediaRecorder.isTypeSupported(mimeType)) {
+          console.warn(`${mimeType} is not supported, falling back to default`);
+        }
 
         // Initialize the media recorder with audio emphasis
         this.mediaRecorder = new globalThis.MediaRecorder(stream, {
-          mimeType,
+          mimeType: globalThis.MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm',
           audioBitsPerSecond: 128000, // Prioritize audio quality
-          videoBitsPerSecond: 2500000, // ~2.5 Mbps for good video quality
         });
 
         // Collect data chunks as they become available
@@ -103,10 +91,10 @@ export class MediaRecorder {
         }
 
         // Create blob from recorded chunks
-        const mimeType = this.recordedChunks[0].type;
-        const recordedBlob = new Blob(this.recordedChunks, { type: mimeType });
+        const recordedBlob = new Blob(this.recordedChunks, { 
+          type: this.recordedChunks[0].type 
+        });
         
-        console.log(`Recording completed: ${recordedBlob.size} bytes, type: ${mimeType}`);
         resolve(recordedBlob);
       };
 
