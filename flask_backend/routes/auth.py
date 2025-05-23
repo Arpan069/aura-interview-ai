@@ -8,7 +8,8 @@ import datetime
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, 
-    jwt_required, get_jwt_identity, get_jwt
+    jwt_required, get_jwt_identity, get_jwt,
+    verify_jwt_in_request
 )
 from werkzeug.security import generate_password_hash
 from email_validator import validate_email, EmailNotValidError
@@ -196,18 +197,22 @@ def refresh_token():
     }), 200
 
 @auth_routes.route("/api/auth/me", methods=["GET"])
-@jwt_required()
 def get_user_profile():
     """Get current user profile"""
-    user_id = get_jwt_identity()
-    user = User.query.get(user_id)
-    
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    try:
+        # First verify that the JWT token is present and valid
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
         
-    return jsonify({
-        "user": user.to_dict()
-    }), 200
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+            
+        return jsonify({
+            "user": user.to_dict()
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Authentication error: {str(e)}"}), 401
 
 @auth_routes.route("/api/auth/logout", methods=["POST"])
 @jwt_required()

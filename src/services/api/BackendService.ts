@@ -2,7 +2,7 @@
 import { RequestHelper } from './RequestHelper';
 import { BackendError } from './BackendError';
 import type { TranscriptionOptions, TranscriptionResult, TextToSpeechOptions, ConversationOptions } from '../OpenAIServiceTypes';
-import type { UserCredentials, UserProfile, OTPVerificationResult } from '@/types/auth'; // Now this should be found
+import type { UserCredentials, UserProfile, OTPVerificationResult } from '@/types/auth';
 import type { InterviewDetail } from '@/types/interview';
 
 // Base URL for the backend API
@@ -67,7 +67,12 @@ export class BackendService {
   }
 
   public async getUserProfile(): Promise<UserProfile> {
-    return this.requestHelper.get<UserProfile>('/auth/profile', {}, true); 
+    try {
+      return await this.requestHelper.get<UserProfile>('/auth/me', {}, true);
+    } catch (error) {
+      console.error("Failed to get user profile:", error);
+      throw error;
+    }
   }
 
   public async updateUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
