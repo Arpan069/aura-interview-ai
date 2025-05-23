@@ -197,11 +197,10 @@ def refresh_token():
     }), 200
 
 @auth_routes.route("/api/auth/me", methods=["GET"])
+@jwt_required()  # Make sure this route requires JWT
 def get_user_profile():
     """Get current user profile"""
     try:
-        # First verify that the JWT token is present and valid
-        verify_jwt_in_request()
         user_id = get_jwt_identity()
         user = User.query.get(user_id)
         
@@ -221,3 +220,4 @@ def logout():
     # In a more complete implementation, you would revoke the token here
     # For now, we'll just return a success message
     return jsonify({"message": "Logout successful"}), 200
+

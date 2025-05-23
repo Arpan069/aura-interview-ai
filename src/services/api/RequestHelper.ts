@@ -1,3 +1,4 @@
+
 /**
  * Helper class for making HTTP requests with consistent error handling and JWT authentication
  */
@@ -46,7 +47,8 @@ export class RequestHelper {
           await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        return await fetch(url, options);
+        const response = await fetch(url, options);
+        return response;
       } catch (error) {
         this.log(`Fetch error (attempt ${attempt}):`, error);
         lastError = error instanceof Error ? error : new Error(String(error));
@@ -80,12 +82,16 @@ export class RequestHelper {
 
       // If unauthorized and using auth, try to refresh the token
       if (response.status === 401 && requiresAuth) {
-        const refreshed = await this.refreshToken();
-        if (refreshed) {
-          // Retry the original request with the new token
-          this.log("Retrying request with refreshed token");
-          // We need the original request info to retry
-          return Promise.reject(new BackendError("Token expired, please retry", 401));
+        try {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            // Retry the original request with the new token
+            this.log("Retrying request with refreshed token");
+            // We need the original request info to retry
+            return Promise.reject(new BackendError("Token expired, please retry", 401));
+          }
+        } catch (refreshError) {
+          this.log("Failed to refresh token:", refreshError);
         }
       }
 
@@ -156,7 +162,7 @@ export class RequestHelper {
         ...(requiresAuth ? this.getAuthHeader() : {}),
       };
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithRetry(url, {
         method: "GET",
         headers,
       });
@@ -198,7 +204,7 @@ export class RequestHelper {
         Object.assign(headers, this.getAuthHeader());
       }
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithRetry(url, {
         method: "POST",
         headers,
         body,
@@ -229,7 +235,7 @@ export class RequestHelper {
         ...(requiresAuth ? this.getAuthHeader() : {}),
       };
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithRetry(url, {
         method: "PUT",
         headers,
         body: JSON.stringify(data),
@@ -258,7 +264,7 @@ export class RequestHelper {
         ...(requiresAuth ? this.getAuthHeader() : {}),
       };
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithRetry(url, {
         method: "DELETE",
         headers,
       });

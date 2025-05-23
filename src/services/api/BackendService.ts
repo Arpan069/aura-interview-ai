@@ -34,7 +34,11 @@ export class BackendService {
       if (error instanceof BackendError && error.status === 404) {
         return { status: "error", api_key_configured: false };
       }
-      return { status: "error", api_key_configured: false };
+      // Return a more meaningful error response when backend is unreachable
+      return { 
+        status: "error", 
+        api_key_configured: false 
+      };
     }
   }
   
@@ -42,7 +46,8 @@ export class BackendService {
     try {
       const health = await this.healthCheck();
       return health.status === "ok";
-    } catch {
+    } catch (error) {
+      console.error("Backend availability check failed:", error);
       return false;
     }
   }
@@ -52,14 +57,19 @@ export class BackendService {
   }
 
   public async login(credentials: UserCredentials): Promise<{ access_token: string; refresh_token: string; user: UserProfile }> {
-    const response = await this.requestHelper.post<{ access_token: string; refresh_token: string; user: UserProfile }>('/auth/login', credentials);
-    if (response.access_token) {
-      localStorage.setItem('access_token', response.access_token);
+    try {
+      const response = await this.requestHelper.post<{ access_token: string; refresh_token: string; user: UserProfile }>('/auth/login', credentials);
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token);
+      }
+      return response;
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
-    if (response.refresh_token) {
-      localStorage.setItem('refresh_token', response.refresh_token);
-    }
-    return response;
   }
   
   public async verifyOTP(email: string, otp: string): Promise<OTPVerificationResult> {
