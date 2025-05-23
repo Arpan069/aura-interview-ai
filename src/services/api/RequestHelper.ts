@@ -1,4 +1,3 @@
-
 /**
  * Helper class for making HTTP requests with consistent error handling and JWT authentication
  */
@@ -26,6 +25,40 @@ export class RequestHelper {
   private getAuthHeader(): { Authorization?: string } {
     const token = localStorage.getItem("access_token");
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  /**
+   * Fetch with automatic retry for transient errors
+   */
+  public async fetchWithRetry(
+    url: string, 
+    options: RequestInit, 
+    maxRetries: number = 2
+  ): Promise<Response> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          this.log(`Retry attempt ${attempt} for ${options.method} ${url}`);
+          // Exponential backoff
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        return await fetch(url, options);
+      } catch (error) {
+        this.log(`Fetch error (attempt ${attempt}):`, error);
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Only retry on network errors, not HTTP errors (which still return a Response)
+        if (attempt >= maxRetries) {
+          break;
+        }
+      }
+    }
+    
+    throw lastError || new Error("Request failed");
   }
 
   private async handleResponse<T>(
